@@ -1,9 +1,3 @@
-
-//
-//  Created by Ryan Young on 4/4/13.
-//  Copyright (c) 2013 Ryan Young. All rights reserved.
-//
-
 //  Edited and expanded by PR, Aug 2013
 
 #include <math.h>
