@@ -1,6 +1,13 @@
 #ifndef __FUNCTIONS_H_
 #define __FUNCTIONS_H_
+#include <vector>
+#include <math.h>
+#include <fstream>
 
+using namespace std;
+
+#define Q 9
+#define D 2
 //Function description,input parameter,output parameters??
 void init_gaussian(vector<vector<vector<double>>>* fIn, vector<vector<vector<double>>>* fOut, vector<vector<double>>* rho,
 				   vector<vector<double>>* ux, vector<vector<double>>* uy, int c[Q][D], double wi[Q], double lambda, int nx,

@@ -1,8 +1,12 @@
+#include "functions.h"
+#include <iostream>
+using namespace std;
+
 void init_gaussian(vector<vector<vector<double>>>* fIn, vector<vector<vector<double>>>* fOut, vector<vector<double>>* rho,
                    vector<vector<double>>* ux, vector<vector<double>>* uy, int c[Q][D], double wi[Q], double lambda, int nx,
                    int ny, double sd, double T0, double omega)
 {
-  
+
   double u_sqr, c_dot_u, fEq;
   double x, y;
 
@@ -14,7 +18,7 @@ void init_gaussian(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
     for (int j = 0; j < ny; ++j)
     {
 
-      u_sqr = ((*ux)[i][j] * (*ux)[i][j]) + ((*uy)[i][j] * (*uy)[i][j]); 
+      u_sqr = ((*ux)[i][j] * (*ux)[i][j]) + ((*uy)[i][j] * (*uy)[i][j]);
 
       // Data type mixing possible precision loss.
       (*rho)[i][j] = exp(-(0.5 / T0) * ((i - middlex) / sd) * ((i - middlex) / sd) - (0.5 / T0) * lambda
@@ -22,8 +26,8 @@ void init_gaussian(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
 
       for (int n = 0; n < Q; ++n)
 	    {
-        c_dot_u = (c[n][0] * (*ux)[i][j]) + (c[n][1] * (*uy)[i][j]); 
-	 
+        c_dot_u = (c[n][0] * (*ux)[i][j]) + (c[n][1] * (*uy)[i][j]);
+
 	      fEq = wi[n] * (*rho)[i][j];
 
 	      (*fIn)[i][j][n] = fEq;
@@ -64,7 +68,7 @@ void eq_and_stream(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
       (*rho)[i][j] = 0.0;
       (*ux)[i][j] = 0.0;
       (*uy)[i][j] = 0.0;
-	            
+
       for (int n = 0; n < Q; ++n)
 	    {
         (*rho)[i][j] = (*rho)[i][j] + (*fIn)[i][j][n]; // rho
@@ -97,10 +101,10 @@ void eq_and_stream(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
       	    cout << "potential is on" << endl;
       	  }
       	}
-      	else 
+      	else
         {
       	  force = 0.0;
-      	  if (i == 0 && j == 0 && n == 0) 
+      	  if (i == 0 && j == 0 && n == 0)
           {
       	    cout << "potential is off" << endl;
       	  }
@@ -127,9 +131,9 @@ void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vec
     int j = middley;
     out << (i - middlex) * sinv << "\t";
     out << (*rho)[i][j] << "\n";
-  }  
-        
-  out.close(); 
+  }
+
+  out.close();
 
   sprintf(fname,"data/Yrho_t%i.dat", ts);
   out.open(fname, ios::out);
@@ -138,9 +142,9 @@ void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vec
     int i = middlex;
     out << (j - middley) * sinv << "\t";
     out << (*rho)[i][j] << "\n";
-  }  
-        
-  out.close(); 
+  }
+
+  out.close();
 
   sprintf(fname,"data/Xux_t%i.dat", ts);
   out.open(fname, ios::out);
@@ -149,9 +153,9 @@ void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vec
     int j = middley;
     out << (i - middlex) * sinv << "\t";
     out << (*ux)[i][j] << "\n";
-  }  
-        
-  out.close(); 
+  }
+
+  out.close();
 
   sprintf(fname,"data/Yuy_t%i.dat", ts);
   out.open(fname, ios::out);
@@ -160,7 +164,7 @@ void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vec
     int i = middlex;
     out << (j - middley) * sinv << "\t";
     out << (*uy)[i][j] << "\n";
-  }  
-        
-  out.close(); 
+  }
+
+  out.close();
 }

@@ -13,16 +13,15 @@
 #include "functions.h"
 // #include <omp.h>
 
-#define Q 9
-#define D 2
+
 
 using namespace std;
 
 int main(int argc, const char* argv[])
 {
-  int nx = 501;
-  int ny = 501;
-  int nsteps = 1000;  // are these time steps??
+  int nx = 10;
+  int ny = 10;
+  int nsteps = 20;  // are these time steps??
   double sd = 50.0;   // standard deviation
   double omega = 1.0; // ??
 
@@ -30,7 +29,7 @@ int main(int argc, const char* argv[])
   double wxreal = 0.000785398;         // micro-Hz
   int dtsim = round(dtreal*wxreal*sd); // round result to nearest int
   double lambda = 1.0;
- 
+
   cout << "dtsim = " << dtsim << endl;
 
   int t_off = 10;           // time step to turn potential off
@@ -58,9 +57,9 @@ int main(int argc, const char* argv[])
   double w1 = 4.0 / 9.0;
   double w2 = 1.0 / 9.0;
   double w3 = 1.0 / 36.0;
-  double wi[] = {w1, w2, w2, w2, w2, w3, w3, w3, w3}; 
+  double wi[] = {w1, w2, w2, w2, w2, w3, w3, w3, w3};
 
-  init_gaussian(&fIn, &fOut, &rho, &ux, &uy, c, wi, lambda, nx, ny, sd, T0, omega);   
+  init_gaussian(&fIn, &fOut, &rho, &ux, &uy, c, wi, lambda, nx, ny, sd, T0, omega);
 
   for (int ts = 0; ts < nsteps; ++ts)
   {
@@ -76,7 +75,7 @@ int main(int argc, const char* argv[])
     eq_and_stream(&fIn, &fOut, &rho, &ux, &uy, c, wi, nop, lambda, nx, ny, T0, omega, sd, ftrue);
 
     fIn = fOut;
-    
+
     write_gaussian(&rho, &ux, &uy, nx, ny, sd, ts);
   }
 
