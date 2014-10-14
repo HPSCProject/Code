@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-void init_gaussian(vector<vector<vector<double>>>* fIn, vector<vector<vector<double>>>* fOut, vector<vector<double>>* rho,
+void init_gaussian(double* fIn, vector<vector<vector<double>>>* fOut, vector<vector<double>>* rho,
                    vector<vector<double>>* ux, vector<vector<double>>* uy, int c[Q][D], double wi[Q], double lambda, int nx,
                    int ny, double sd, double T0, double omega)
 {
