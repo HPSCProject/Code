@@ -2,8 +2,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <fstream>
-#include <iostream>
 #include <iomanip>
 #include <locale>
 #include <sstream>
@@ -22,24 +20,24 @@ int main(int argc, const char* argv[])
 
   cout << "dtsim = " << DT_SIM << endl;
 
-  // Input & output array.
-  double fIn[NX*NY*Q], fOut[NX*NY*Q];
+  // Input & output arrays.
+  qr_type fIn[NX*NY*Q], fOut[NX*NY*Q];
 
   // Fill input & output arrays w/ 0.
-  memcpy(fIn, 0.0, sizeof(double)*NX*NY*Q);
-  memcpy(fOut, 0.0, sizeof(double)*NX*NY*Q);
+  memcpy(fIn, 0.0, F_SIZE);
+  memcpy(fOut, 0.0, F_SIZE);
 
   // What is this stuff?
-  double rho[NX*NY];	// Description
-  double ux[NX*NY];		// Description
-  double uy[NX*NY];		// Description
+  qr_type rho[NX*NY];	// Description
+  qr_type ux[NX*NY];	// Description
+  qr_type uy[NX*NY];	// Description
 
   // Fill rho, ux, uy.
-  memcpy(rho, 1.0, sizeof(double)*NX*NY);
-  memcpy(ux, 0.0, sizeof(double)*NX*NY);
-  memcpy(uy, 0.0, sizeof(double)*NX*NY);
+  memcpy(rho, 1.0, 2D_SIZE);
+  memcpy(ux, 0.0, 2D_SIZE);
+  memcpy(uy, 0.0, 2D_SIZE);
 
-  init_gaussian(fIn, fOut, rho, ux, uy, c, wi, LAMBDA, NX, NY, SD, T0, OMEGA);
+  init_gaussian(fIn, fOut, rho, ux, uy, wi);
 
   for (size_t ts = 0; ts < N_STEPS; ++ts)
   {
@@ -52,11 +50,11 @@ int main(int argc, const char* argv[])
       ftrue = false;
     }
 
-    eq_and_stream(fIn, fOut, rho, ux, uy, c, wi, nop, LAMBDA, NX, NY, T0, OMEGA, SD, ftrue);
+    eq_and_stream(fIn, rho, ux, uy, c, wi, ftrue);
 
     fIn = fOut;
 
-    write_gaussian(rho, ux, uy, NX, NY, SD, ts);
+    write_gaussian(rho, ux, uy, ts);
   }
 
   return 0;
