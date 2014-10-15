@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <hdf5.h>
 // #include <omp.h>
 
 #define Q 9
@@ -158,6 +159,51 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
   }
 }
 
+void write_file(vector<vector <double> > * vec, int dim, int nx, int ny, double sd) {
+
+  double sinv = 1.0/sd;
+
+  hid_t file_id, dataset_id, space_id, property_id;
+  herr_t status;
+
+  hsize_t dims[2] = { dim,2 };
+
+  double * towrite = new double[2*dim];
+
+  // write Xrho. THIS ISN'T RIGHT!!!
+  int middlex = nx/2;
+  int middley = ny/2;
+  int j = middley;
+
+  for (int i=0; i<nx; i++) {
+    towrite[2*i] = (i-middlex)*sinv;
+    towrite[2*i+1] = (*vec)[i][j];
+  }
+
+  const string filename = "Xrho_t0.hdf5"; 
+  file_id = H5Fcreate( filename.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
+
+  space_id = H5Screate_simple( 2,dims,NULL );
+
+  property_id = H5Pcreate( H5P_DATASET_CREATE );
+  status = H5Pset_layout( property_id,H5D_CONTIGUOUS );
+
+  dataset_id = H5Dcreate( file_id,"DATASET",H5T_STD_I32LE,space_id,H5P_DEFAULT,property_id,H5P_DEFAULT );
+
+  status = H5Dwrite( dataset_id,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,towrite );
+
+  // close up the files
+  status = H5Sclose( space_id );
+  status = H5Dclose( dataset_id );
+  status = H5Fclose( file_id );
+  status = H5Pclose( property_id );
+}
+
+void write_hdf5(vector<vector <double> > * rho, int nx, int ny, double sd) {
+
+  write_file( rho,nx,nx,ny,sd );
+}
+
 void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * ux, vector<vector <double> > * uy, int nx, int ny, double sd, int ts) {
 
   fstream out;
@@ -268,8 +314,9 @@ int main(int argc, const char * argv[])
     eq_and_stream(&fIn,&fOut,&rho,&ux,&uy,c,wi,nop,lambda,nx,ny,T0,omega,sd,ftrue);
 
     fIn = fOut;
-    
-    write_gaussian(&rho,&ux,&uy,nx,ny,sd,ts);
+
+    // write_gaussian(&rho,&ux,&uy,nx,ny,sd,ts);
+    write_hdf5( &rho,nx,ny,sd );
   }
 
   return 0;
