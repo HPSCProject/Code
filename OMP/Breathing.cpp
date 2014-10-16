@@ -60,7 +60,7 @@ int main(int argc, const char* argv[])
   double wi[] = {w1, w2, w2, w2, w2, w3, w3, w3, w3};
 
   init_gaussian(&fIn, &fOut, &rho, &ux, &uy, c, wi, lambda, nx, ny, sd, T0, omega);
-
+ 
   for (int ts = 0; ts < nsteps; ++ts)
   {
     if (ts == t_on)

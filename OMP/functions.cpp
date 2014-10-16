@@ -3,8 +3,7 @@
 using namespace std;
 
 void init_gaussian(vector<vector<vector<double>>>* fIn, vector<vector<vector<double>>>* fOut, vector<vector<double>>* rho,
-                   vector<vector<double>>* ux, vector<vector<double>>* uy, int c[Q][D], double wi[Q], double lambda, int nx,
-                   int ny, double sd, double T0, double omega)
+                   vector<vector<double>>* ux, vector<vector<double>>* uy, int c[Q][D], double wi[Q], double lambda, int nx, int ny, double sd, double T0, double omega)
 {
 
   double u_sqr, c_dot_u, fEq;
@@ -13,6 +12,7 @@ void init_gaussian(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
   double middlex = nx / 2;
   double middley = ny / 2;
 
+  # pragma omp for private(j,n) 
   for (int i = 0; i < nx; ++i)
   {
     for (int j = 0; j < ny; ++j)
@@ -56,6 +56,8 @@ void eq_and_stream(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
 
   double cdotX,udotX;
 
+  #pragma omp for private(j,n) reduction(+:c_dot_u)
+
   for (int i = 0; i < nx; ++i)
   {
     for (int j = 0; j < ny; ++j)
@@ -80,7 +82,7 @@ void eq_and_stream(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
       (*uy)[i][j] = (*uy)[i][j] / (*rho)[i][j];
 
       u_sqr = ((*ux)[i][j] * (*ux)[i][j]) + ((*uy)[i][j] * (*uy)[i][j]);
-
+      
       for (int n = 0; n < Q; ++n)
       {
 
@@ -127,6 +129,8 @@ void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vec
   sprintf(fname,"data/Xrho_t%i.dat", ts);
   //out.open(fname, ios::out);
   out.open("data.txt");
+
+  #pragma omp for
   for(int i = 0; i < nx; ++i)
   {
     int j = middley;
@@ -138,6 +142,7 @@ void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vec
 
   sprintf(fname,"data/Yrho_t%i.dat", ts);
   out.open(fname, ios::out);
+  #pragma omp for
   for(int j = 0; j < ny; ++j)
   {
     int i = middlex;
@@ -149,6 +154,7 @@ void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vec
 
   sprintf(fname,"data/Xux_t%i.dat", ts);
   out.open(fname, ios::out);
+  #pragma omp for
   for(int i = 0; i < nx; ++i)
   {
     int j = middley;
@@ -160,6 +166,7 @@ void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vec
 
   sprintf(fname,"data/Yuy_t%i.dat", ts);
   out.open(fname, ios::out);
+  #pragma omp for
   for(int j = 0; j < ny; ++j)
   {
     int i = middlex;
