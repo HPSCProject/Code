@@ -1,20 +1,25 @@
 #include "functions.h"
 #include <iostream>
-using namespace std;
+#include <time.h>
 
-void init_gaussian(vector<vector<vector<double>>>* fIn, vector<vector<vector<double>>>* fOut, vector<vector<double>>* rho,
-                   vector<vector<double>>* ux, vector<vector<double>>* uy, int c[Q][D], double wi[Q], double lambda, int nx, int ny, double sd, double T0, double omega)
+using namespace std;
+//clock_t start, end; 
+void init_gaussian(vector<vector<vector<double> > >* fIn, vector<vector<vector<double> > >* fOut, vector<vector<double> >* rho,
+                   vector<vector<double> >* ux, vector<vector<double> >* uy, int c[Q][D], double wi[Q], double lambda, int nx, int ny, double sd, double T0, double omega)
 {
 
   double u_sqr, c_dot_u, fEq;
-  double x, y;
+  double x, y,tm=0.0;
 
   double middlex = nx / 2;
   double middley = ny / 2;
-
-  # pragma omp for private(j,n) 
+  clock_t start, end;
+  start=clock();
+  #pragma omp for  
+  
   for (int i = 0; i < nx; ++i)
   {
+    	//start=clock();
     for (int j = 0; j < ny; ++j)
     {
 
@@ -35,10 +40,14 @@ void init_gaussian(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
 	    }
     }
   }
+  end=clock();
+  tm=(start-end);
+  printf("Time for init_gaussian: %ld",start);
+  printf("%ld",end);
 }
 
-void eq_and_stream(vector<vector<vector<double>>>* fIn, vector<vector<vector<double>>>* fOut, vector<vector<double>>* rho,
-                   vector<vector<double>>* ux, vector<vector<double>>* uy, int c[Q][D], double wi[Q], int nop[Q], double lambda,
+void eq_and_stream(vector<vector<vector<double> > >* fIn, vector<vector<vector<double> > >* fOut, vector<vector<double> >* rho,
+                   vector<vector<double> >* ux, vector<vector<double> >* uy, int c[Q][D], double wi[Q], int nop[Q], double lambda,
                    int nx, int ny, double T0, double omega, double sd, bool ftrue)
 {
 
@@ -52,12 +61,13 @@ void eq_and_stream(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
   double middlex = nx / 2;
   double middley = ny / 2;
 
-  double c_sqr;
+  double c_sqr,tm;
 
   double cdotX,udotX;
-
-  #pragma omp for private(j,n) reduction(+:c_dot_u)
-
+  clock_t start, end;
+  start=clock();
+  #pragma omp for //reduction(+:c_dot_u)
+  
   for (int i = 0; i < nx; ++i)
   {
     for (int j = 0; j < ny; ++j)
@@ -116,21 +126,26 @@ void eq_and_stream(vector<vector<vector<double>>>* fIn, vector<vector<vector<dou
       }
     }
   }
+  end=clock();
+  tm=(start-end)/CLOCKS_PER_SEC;
+  //printf("Time for eq_and_stream:%ld",tm);
 }
 
-void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vector<vector<double>>* uy, int nx, int ny, double sd, int ts)
+void write_gaussian(vector<vector<double> >* rho, vector<vector<double> >* ux, vector<vector<double> >* uy, int nx, int ny, double sd, int ts)
 {
   fstream out;
   char fname[255];
   float sinv=1.0 / sd;
   int middlex = nx / 2;
   int middley = ny / 2;
+  double tm=0.0;
 
   sprintf(fname,"data/Xrho_t%i.dat", ts);
   //out.open(fname, ios::out);
   out.open("data.txt");
 
-  #pragma omp for
+ // #pragma omp for
+ 
   for(int i = 0; i < nx; ++i)
   {
     int j = middley;
@@ -142,7 +157,7 @@ void write_gaussian(vector<vector<double>>* rho, vector<vector<double>>* ux, vec
 
   sprintf(fname,"data/Yrho_t%i.dat", ts);
   out.open(fname, ios::out);
-  #pragma omp for
+  //#pragma omp for
   for(int j = 0; j < ny; ++j)
   {
     int i = middlex;

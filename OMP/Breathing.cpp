@@ -42,13 +42,13 @@ int main(int argc, const char* argv[])
 
   double T0 = 1.0/3.0;
 
-  vector<vector<vector<double>>> fIn (nx, vector<vector<double>>(ny, vector<double>(Q, 0.0)));
+  vector<vector<vector <double> > > fIn (nx, vector<vector <double> >(ny, vector<double>(Q, 0.0)));
 
-  vector<vector<vector<double>>> fOut(nx, vector<vector<double>>(ny, vector<double>(Q, 0.0)));
+  vector<vector<vector<double> > > fOut(nx, vector<vector <double> >(ny, vector<double>(Q, 0.0)));
 
-  vector<vector<double>> rho (nx, vector<double>(ny, 1.0));
-  vector<vector<double>> ux (nx, vector<double>(ny, 0.0));
-  vector<vector<double>> uy (nx, vector<double>(ny, 0.0));
+  vector<vector<double> > rho (nx, vector<double>(ny, 1.0));
+  vector<vector<double> > ux (nx, vector<double>(ny, 0.0));
+  vector<vector<double> > uy (nx, vector<double>(ny, 0.0));
 
   int c[Q][D] = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1} ,{1, -1}};
 
