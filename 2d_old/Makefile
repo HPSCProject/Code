@@ -1,10 +1,10 @@
 CC = icc
 LD = icc
 
-#OPT = -Ofast -vec_report6 -simd -xhost
-OPT = -Ofast  -simd -xhost
+
+OPT = -Ofast
 Breathing.exe: Breathing.o functions.o 
-	$(LD) -o Breathing.exe Breathing.o functions.o
+	$(LD) $(OPT) -o Breathing.exe Breathing.o functions.o
 
 Breathing.o: Breathing.cpp 
 	$(CC) $(OPT) -c Breathing.cpp 
