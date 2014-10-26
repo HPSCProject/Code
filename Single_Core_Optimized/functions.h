@@ -1,6 +1,6 @@
 #ifndef __FUNCTIONS_H_
 #define __FUNCTIONS_H_
-#include <math.h>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 
@@ -12,14 +12,14 @@
 // CONSTANT, PREPROCESSOR DEFINTIONS
 typedef double qr_type;
 
-#define NX 			10							// Description
-#define NY 			10 							// Description
+#define NX 			251							// Description
+#define NY 			251 							// Description
 #define MIDDLE_X 	(NX/2.0)					// Description
 #define MIDDLE_Y 	(NY/2.0)					// Description
 #define FLOOR_X		FLOOR(MIDDLE_X)				// MIDDLE_X rounded down.
 #define FLOOR_Y		FLOOR(MIDDLE_Y)				// MIDDLE_Y rounded down.
 
-#define N_STEPS		20 							// Description
+#define N_STEPS		250 							// Description
 #define SD 			50.0						// Description
 #define OMEGA 		1.0 						// Description
 #define SIN_V		(1.0/SD)					// Description
@@ -41,7 +41,7 @@ typedef double qr_type;
 #define Q 			9							// Description
 #define D 			2 							// Description
 #define F_SIZE		(SIZE_OF(qr_type)*NX*NY*Q)	// Size of the fIn/fOut array.
-#define 2D_SIZE		(SIZE_OF(qr_type)*NX*NY)	// Size of the rho/ux/uy.
+#define TWOD_SIZE		(SIZE_OF(qr_type)*NX*NY)	// Size of the rho/ux/uy.
 
 using namespace std;
 
@@ -52,6 +52,6 @@ void init_gaussian(qr_type fIn[NX*NY*Q], qr_type fOut[NX*NY*Q], qr_type rho[NX*N
 void eq_and_stream(qr_type fIn[NX*NY*Q], qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], const int c[Q][D], const double wi[Q], const bool& ftrue);
 
  //Function description,input parameter,output parameters??
-void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], const size_t& ts);
+void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], int ts);
 
 #endif

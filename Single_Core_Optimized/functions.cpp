@@ -79,54 +79,58 @@ void eq_and_stream(qr_type fIn[NX*NY*Q], qr_type rho[NX*NY], qr_type ux[NX*NY], 
       	  }
       	}
 
-	    fIn[i*NY*Q+j*Q+n] *= (1.0 - OMEGA)) + OMEGA * fEq + force;
+	    fIn[i*NY*Q+j*Q+n] *= (1.0 - OMEGA) + OMEGA * fEq + force;
       }
     }
   }
 }
 
-void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], const size_t& ts)
+void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], int  ts)
 {
   fstream out;
   char fname[255];
-
+  
   sprintf(fname, "data/Xrho_t%i.dat", ts);
   out.open(fname, ios::out);
   //out.open("data.txt");
-  for(size_t i = 0; i < NX; ++i)
+  for(int i = 0; i < NX; ++i)
   {    
     out << (i - MIDDLE_X) * SIN_V << "\t";
-    out << rho[i*NY+FLOOR_Y] << "\n";
+    //out << rho[i*NY+FLOOR_Y] << "\n";
+    out << rho[i*NY+125] << "\n";
   }
 
   out.close();
 
   sprintf(fname, "data/Yrho_t%i.dat", ts);
   out.open(fname, ios::out);
-  for(size_t j = 0; j < NY; ++j)
+  for(int j = 0; j < NY; ++j)
   {
     out << (j - MIDDLE_Y) * SIN_V << "\t";
-    out << rho[FLOOR_X*NY+j] << "\n";
+    //out << rho[FLOOR_X*NY+j] << "\n";
+    out << rho[125*NY+j] << "\n";
   }
 
   out.close();
 
   sprintf(fname, "data/Xux_t%i.dat", ts);
   out.open(fname, ios::out);
-  for(size_t i = 0; i < NX; ++i)
+  for(int i = 0; i < NX; ++i)
   {
     out << (i - MIDDLE_X) * SIN_V << "\t";
-    out << ux[i*NY+FLOOR_Y] << "\n";
+    // out << ux[i*NY+FLOOR_Y] << "\n";
+    out << ux[i*NY+125] << "\n";
   }
 
   out.close();
 
   sprintf(fname, "data/Yuy_t%i.dat", ts);
   out.open(fname, ios::out);
-  for(size_t j = 0; j < NY; ++j)
+  for(int j = 0; j < NY; ++j)
   {
     out << (j - MIDDLE_Y) * SIN_V << "\t";
-    out << uy[FLOOR_X*NY+j] << "\n";
+    // out << uy[FLOOR_X*NY+j] << "\n";
+   out << uy[125*NY+j] << "\n";
   }
 
   out.close();
