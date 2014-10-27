@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <locale>
 #include <sstream>
-#include <string>
+#include <cstring>
 #include "functions.h"
 
 using namespace std;
@@ -24,8 +24,8 @@ int main(int argc, const char* argv[])
   qr_type fIn[NX*NY*Q], fOut[NX*NY*Q];
 
   // Fill input & output arrays w/ 0.
-  memcpy(fIn, 0.0, F_SIZE);
-  memcpy(fOut, 0.0, F_SIZE);
+  memset(fIn, 0.0, F_SIZE);
+  memset(fOut, 0.0, F_SIZE);
 
   // Declare the macroscopic variables for the fluid
   qr_type rho[NX*NY];	// Fluid density
@@ -33,9 +33,9 @@ int main(int argc, const char* argv[])
   qr_type uy[NX*NY];	// Fluid velocity in the y direction
 
   // Fill rho, ux, uy.
-  memcpy(rho, 1.0, 2D_SIZE);
-  memcpy(ux, 0.0, 2D_SIZE);
-  memcpy(uy, 0.0, 2D_SIZE);
+  memset(rho, 1.0, TWOD_SIZE);
+  memset(ux, 0.0, TWOD_SIZE);
+  memset(uy, 0.0, TWOD_SIZE);
 
   init_gaussian(fIn, fOut, rho, ux, uy, wi);
 
@@ -52,8 +52,9 @@ int main(int argc, const char* argv[])
 
     eq_and_stream(fIn, rho, ux, uy, c, wi, ftrue);
 
-    fIn = fOut;
-
+    //fIn = fOut;
+    memcpy(fIn,fOut,sizeof(fIn));
+    if (ts%10==0)
     write_gaussian(rho, ux, uy, ts);
   }
 
