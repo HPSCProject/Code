@@ -56,8 +56,7 @@ int main(int argc,char* argv[])
           for(int j=0;j<col;j++)
             {
                 if((abs(A[i][j] - B[i][j])) > 0.0e-06){
-                    cout<<" A and B have different values at location "<<i<<"x"<<j<<endl;
-                    cout<<"A value "<<A[i][j]<<"  B value "<<B[i][j]<<endl;
+                    cout<<" A and B have different values at location "<<i<<"x"<<j<<"   A value "<<A[i][j]<<"  B value "<<B[i][j]<<endl;
                     count++;}
             }
         }

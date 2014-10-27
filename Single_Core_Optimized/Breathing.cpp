@@ -37,7 +37,7 @@ int main(int argc, const char* argv[])
   memset(ux, 0.0, TWOD_SIZE);
   memset(uy, 0.0, TWOD_SIZE);
 
-  init_gaussian(fIn, fOut, rho, ux, uy, wi);
+  init_gaussian(fIn,fOut,rho,wi);
 
   for (size_t ts = 0; ts < N_STEPS; ++ts)
   {

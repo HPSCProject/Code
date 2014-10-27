@@ -1,7 +1,7 @@
 #include "functions.h"
 using namespace std;
 
-void init_gaussian(qr_type fIn[NX*NY*Q], qr_type fOut[NX*NY*Q], qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], const double wi[Q])
+void init_gaussian(qr_type fIn[NX*NY*Q], qr_type fOut[NX*NY*Q], qr_type rho[NX*NY], const double wi[Q])
 {
   qr_type fEq;
 
