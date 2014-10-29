@@ -1,68 +1,66 @@
 #include "functions.h"
 using namespace std;
 
-void init_gaussian(qr_type fIn[NX*NY*Q], qr_type fOut[NX*NY*Q], qr_type rho[NX*NY], const double wi[Q])
+void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q])
 {
   qr_type fEq;
 
-  for (size_t i = 0; i < NX; ++i)
+  for (int i = 0; i < NX; ++i)
   {
-    for (size_t j = 0; j < NY; ++j)
+    for (int j = 0; j < NY; ++j)
     {
-      rho[i*NY+j] = exp(-(0.5 / T0) * ((qr_type(i) - MIDDLE_X) / SD) * ((qr_type(i) - MIDDLE_X) / SD) - (0.5 / T0) * LAMBDA
-                    * LAMBDA * ((qr_type(j) - MIDDLE_Y) / SD) * ((qr_type(j) - MIDDLE_Y) / SD));
-
-      for (size_t n = 0; n < Q; ++n)
+      for (int n = 0; n < Q; ++n)
       {
-      	fEq = wi[n] * rho[i*NY+j];
-
-      	fIn[i*NY*Q+j*Q+n] = fEq;
-      	fOut[i*NY*Q+j*Q+n] = fEq;
+        fEq = wi[n] * exp(-(0.5 / T0) * ((i - MIDDLE_X) / SD) * ((i - MIDDLE_X) / SD) - (0.5 / T0) * LAMBDA
+                    * LAMBDA * ((j - MIDDLE_Y) / SD) * ((j - MIDDLE_Y) / SD));
+      	
+        fIn[i][j][n] = fEq;
+      	fOut[i][j][n] = fEq;
       }
     }
   }
 }
 
-void eq_and_stream(qr_type fIn[NX*NY*Q], qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], const int c[Q][D], const double wi[Q], const bool& ftrue)
+void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux, qr_type **uy, const int c[Q][D], const double wi[Q], const int nop[Q], const bool& ftrue)
 {
   bool notify = true;
   qr_type u_sqr, c_dot_u, force;
   qr_type x, y, temp, fEq;
 
-  for (size_t i = 0; i < NX; ++i)
+  for (int i = 0; i < NX; ++i)
   {
-    for (size_t j = 0; j < NY; ++j)
+    for (int j = 0; j < NY; ++j)
     {
-      x = (qr_type(i) - MIDDLE_X) / SD;
-      y = LAMBDA * LAMBDA * (qr_type(j) - MIDDLE_Y) / SD;
+      // Set to zero before summing
+      rho[i][j] = qr_type(0.0);
+      ux[i][j] = qr_type(0.0);
+      uy[i][j] = qr_type(0.0);
 
-      // Set to zero before summing.
-      rho[i*NY+j] = 0.0;
-      ux[i*NY+j] = 0.0;
-      uy[i*NY+j] = 0.0;
+      x = (i - MIDDLE_X) / SD;
+      y = LAMBDA * LAMBDA * (j - MIDDLE_Y) / SD;
 
-      for (size_t n = 0; n < Q; ++n)
-	  {
-	  	temp = fIn[i*NY*Q+j*Q+n];
-        rho[i*NY+j] += temp;
-	    ux[i*NY+j] += c[n][0] * temp;
-	    uy[i*NY+j] += c[n][1] * temp;
-	  }
+      for (int n = 0; n < Q; ++n)
+	    {
+	  	  temp = fIn[i][j][n];
+        rho[i][j] += temp;
+	      ux[i][j] += c[n][0] * temp;
+	      uy[i][j] += c[n][1] * temp;
+	    }
 
-      ux[i*NY+j] /= rho[i*NY+j];
-      uy[i*NY+j] /= rho[i*NY+j];
+      ux[i][j] /= rho[i][j];
+      uy[i][j] /= rho[i][j];
 
-      u_sqr = (ux[i*NY+j] * ux[i*NY+j]) + (uy[i*NY+j] * uy[i*NY+j]);
+      u_sqr = (ux[i][j] * ux[i][j]) + (uy[i][j] * uy[i][j]);
 
-      for (size_t n = 0; n < Q; ++n)
+      for (int n = 0; n < Q; ++n)
       {
-      	c_dot_u = (c[n][0] * ux[i*NY+j]) + (c[n][1] * uy[i*NY+j]);
+      	c_dot_u = (c[n][0] * ux[i][j]) + (c[n][1] * uy[i][j]);
 
-      	fEq = wi[n] * rho[i*NY+j] * (1.0 + (1.0 / T0) * c_dot_u + (1.0 / (2.0 * T0 * T0)) * c_dot_u * c_dot_u - (1.0 / (2.0 * T0)) * u_sqr);
+      	fEq = wi[n] * rho[i][j] * (1.0 + (1.0 / T0) * c_dot_u + (1.0 / (2.0 * T0 * T0)) * c_dot_u * c_dot_u - (1.0 / (2.0 * T0)) * u_sqr);
 
       	if (ftrue)
         {
-      	  force = -(1.0 / T0) * ((c[n][0] * x) + (c[n][1] * y) - (ux[i*NY+j] * x) + (uy[i*NY+j] * y)) * fEq / SD;
+      	  force = -(1.0 / T0) * (((c[n][0] * x) + (c[n][1] * y)) - ((ux[i][j] * x) + (uy[i][j] * y))) * fEq / SD;
       	  if (notify)
           {
       	    cout << "potential is on" << endl;
@@ -79,25 +77,48 @@ void eq_and_stream(qr_type fIn[NX*NY*Q], qr_type rho[NX*NY], qr_type ux[NX*NY], 
       	  }
       	}
 
-	    fIn[i*NY*Q+j*Q+n] *= (1.0 - OMEGA) + OMEGA * fEq + force;
+	    fIn[i][j][n] = fIn[i][j][n] * (1.0 - OMEGA) + OMEGA * fEq + force;
+      }
+    }
+  }
+
+  int in, jn;
+
+  for (int i = 0; i < NX; ++i)
+  {
+    for (int j = 0; j < NY; ++j)
+    {
+      for (int n = 0; n < Q; ++n)
+      {
+        in = i + int(c[n][0]);
+        jn = j + int(c[n][1]);
+
+        if (in > NX - 1 || in < 0)
+        {
+          in = (in + NX) % NX;                                                                                                                                                                                        
+        }
+        if (jn > NY-1 || jn < 0)
+        {
+          jn = (jn + NY) % NY;                                                                                                                                                                                        
+        }
+
+        fOut[i][j][nop[n]] = fIn[in][jn][nop[n]];
       }
     }
   }
 }
 
-void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], int  ts)
+void write_gaussian(qr_type **rho, qr_type **ux, qr_type **uy, const int& ts)
 {
   fstream out;
   char fname[255];
   
   sprintf(fname, "data/Xrho_t%i.dat", ts);
   out.open(fname, ios::out);
-  //out.open("data.txt");
   for(int i = 0; i < NX; ++i)
   {    
     out << (i - MIDDLE_X) * SIN_V << "\t";
-    //out << rho[i*NY+FLOOR_Y] << "\n";
-    out << rho[i*NY+125] << "\n";
+    out << rho[i][MIDDLE_Y] << "\n";
   }
 
   out.close();
@@ -107,8 +128,7 @@ void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], in
   for(int j = 0; j < NY; ++j)
   {
     out << (j - MIDDLE_Y) * SIN_V << "\t";
-    //out << rho[FLOOR_X*NY+j] << "\n";
-    out << rho[125*NY+j] << "\n";
+    out << rho[MIDDLE_X][j] << "\n";
   }
 
   out.close();
@@ -118,8 +138,7 @@ void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], in
   for(int i = 0; i < NX; ++i)
   {
     out << (i - MIDDLE_X) * SIN_V << "\t";
-    // out << ux[i*NY+FLOOR_Y] << "\n";
-    out << ux[i*NY+125] << "\n";
+    out << ux[i][MIDDLE_Y] << "\n";
   }
 
   out.close();
@@ -129,8 +148,7 @@ void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], in
   for(int j = 0; j < NY; ++j)
   {
     out << (j - MIDDLE_Y) * SIN_V << "\t";
-    // out << uy[FLOOR_X*NY+j] << "\n";
-   out << uy[125*NY+j] << "\n";
+    out << uy[MIDDLE_X][j] << "\n";
   }
 
   out.close();

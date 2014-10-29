@@ -1,11 +1,4 @@
 //  Edited and expanded by PR, Aug 2013
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <iomanip>
-#include <locale>
-#include <sstream>
-#include <cstring>
 #include "functions.h"
 
 using namespace std;
@@ -21,25 +14,46 @@ int main(int argc, const char* argv[])
   cout << "dtsim = " << DT_SIM << endl;
 
   // Input & output arrays.
-  qr_type fIn[NX*NY*Q], fOut[NX*NY*Q];
+  qr_type ***fIn, ***fOut;
 
   // Fill input & output arrays w/ 0.
-  memset(fIn, 0.0, F_SIZE);
-  memset(fOut, 0.0, F_SIZE);
+  fIn = new qr_type**[NX];
+  fOut = new qr_type**[NX];
+  for(int i = 0; i < NX; ++i)
+  {
+    fIn[i] = new qr_type*[NY];
+    fOut[i] = new qr_type*[NY];
+    for(int j = 0; j < NY; ++j)
+    {
+      fIn[i][j] = new qr_type[Q];
+      memset(fIn[i][j], qr_type(0.0), F_SIZE);
+      fOut[i][j] = new qr_type[Q];
+      memset(fOut[i][j], qr_type(0.0), F_SIZE);
+    }
+  }
 
   // Declare the macroscopic variables for the fluid
-  qr_type rho[NX*NY];	// Fluid density
-  qr_type ux[NX*NY];	// Fluid velocity in the x direction
-  qr_type uy[NX*NY];	// Fluid velocity in the y direction
+  qr_type **rho;  // Fluid density
+  qr_type **ux;	  // Fluid velocity in the x direction
+  qr_type **uy;	  // Fluid velocity in the y direction
 
   // Fill rho, ux, uy.
-  memset(rho, 1.0, TWOD_SIZE);
-  memset(ux, 0.0, TWOD_SIZE);
-  memset(uy, 0.0, TWOD_SIZE);
+  rho = new qr_type*[NX];
+  ux = new qr_type*[NX];
+  uy = new qr_type*[NX];
+  for(int i = 0; i < NX; ++i)
+  {
+    rho[i] = new qr_type[NY];
+    memset(rho[i], qr_type(0.0), TWOD_SIZE);
+    ux[i] = new qr_type[NY];
+    memset(ux[i], qr_type(0.0), TWOD_SIZE);
+    uy[i] = new qr_type[NY];
+    memset(uy[i], qr_type(0.0), TWOD_SIZE);
+  }
 
-  init_gaussian(fIn,fOut,rho,wi);
+  init_gaussian(fIn, fOut, wi);
 
-  for (size_t ts = 0; ts < N_STEPS; ++ts)
+  for (int ts = 0; ts < N_STEPS; ++ts)
   {
     if (ts == T_ON)
     {
@@ -50,12 +64,21 @@ int main(int argc, const char* argv[])
       ftrue = false;
     }
 
-    eq_and_stream(fIn, rho, ux, uy, c, wi, ftrue);
+    eq_and_stream(fIn, fOut, rho, ux, uy, c, wi, nop, ftrue);
 
-    //fIn = fOut;
-    memcpy(fIn,fOut,sizeof(fIn));
-    if (ts%10==0)
-    write_gaussian(rho, ux, uy, ts);
+    // fIn = fOut
+    for(int i = 0; i < NX; ++i)
+    {
+      for(int j = 0; j < NY; ++j)
+      {
+        memcpy(fIn[i][j], fOut[i][j], F_SIZE);
+      }
+    }
+    
+    if (ts % 10 == 0)
+    {
+      write_gaussian(rho, ux, uy, ts);
+    }
   }
 
   return 0;
