@@ -1,7 +1,7 @@
 CC = mpicxx
 LD = mpicxx
 
-OPT = -Ofast -vec_report6 -simd -xhost
+OPT = -Ofast  -simd -xhost
 
 Breathing.exe: Breathing_2d.o functions.o 
 	$(LD) -o Breathing.exe Breathing_2d.o functions.o 

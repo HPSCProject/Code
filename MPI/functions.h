@@ -43,6 +43,9 @@ typedef double qr_type;
 #define F_SIZE		(SIZE_OF(qr_type)*NX*NY*Q)	// Size of the fIn/fOut array.
 #define TWOD_SIZE		(SIZE_OF(qr_type)*NX*NY)	// Size of the rho/ux/uy.
 
+#define IDIR            0
+#define JDIR            1
+#define KDIR            2
 
 //Function description,input parameter,output parameters??
 void init_gaussian(qr_type fIn[NX*NY*Q], qr_type fOut[NX*NY*Q], qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], const double wi[Q],int l_start_index,int l_stop_index);
