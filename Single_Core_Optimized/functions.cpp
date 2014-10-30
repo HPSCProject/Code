@@ -9,6 +9,7 @@ void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q])
   {
     for (int j = 0; j < NY; ++j)
     {
+      #pragma simd
       for (int n = 0; n < Q; ++n)
       {
         fEq = wi[n] * exp(-(0.5 / T0) * ((i - MIDDLE_X) / SD) * ((i - MIDDLE_X) / SD) - (0.5 / T0) * LAMBDA
@@ -88,6 +89,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
   {
     for (int j = 0; j < NY; ++j)
     {
+      #pragma simd
       for (int n = 0; n < Q; ++n)
       {
         in = i + int(c[n][0]);
