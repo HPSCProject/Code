@@ -5,6 +5,7 @@ using namespace std;
 
 int main(int argc, const char* argv[])
 {
+  double write_start, write_time;
     double main_start = get_walltime();
   const int c[Q][D] = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
   const int nop[Q] = {0, 3, 4, 1, 2, 7, 8, 5, 6};
@@ -79,17 +80,16 @@ int main(int argc, const char* argv[])
         memcpy(fIn[i][j], fOut[i][j], F_SIZE);
       }
     }
-    
+    write_start = get_walltime(); 
     if (ts % 10 == 0)
     {
-        double write_start = get_walltime();
       write_gaussian(rho, ux, uy, ts);
-        double write_time = get_walltime() - write_start;
     }
+    write_time += get_walltime() - write_start;
   }
 
     double main_time = get_walltime() - main_start;
-    cout << "For size " << NX << "x" << Ny << " over " << N_STEPS << " Timesteps" << endl;
+    cout << "For size " << NX << "x" << NY << " over " << N_STEPS << " Timesteps" << endl;
     cout << "\tTotal Breathing Time: \t\t" << main_time << endl;
     cout << "\tTotal Time For init_gaussian(): \t" << gaussian_time << endl;
     cout << "\tTotal Time For eq_and_stream(): \t" << eq_time << endl;
