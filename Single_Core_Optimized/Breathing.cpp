@@ -53,7 +53,12 @@ int main(int argc, const char* argv[])
 
   init_gaussian(fIn, fOut, wi);
 
-  
+  // Time it.
+  double start = 0.0;
+  double end = 0.0;
+
+  get_walltime(start);
+
   for (int ts = 0; ts < N_STEPS; ++ts)
   {
     if (ts == T_ON)
@@ -80,7 +85,12 @@ int main(int argc, const char* argv[])
     {
       write_gaussian(rho, ux, uy, ts);
     }
-    }
+  }
+
+  get_walltime(end);
+
+  printf("Problem Size: NX=%d, NY=%d, SD=%f, N_STEPS=%d\n", NX, NY, SD, N_STEPS);
+  printf("Walltime %fs\n", end - start);
 
   return 0;
 }
