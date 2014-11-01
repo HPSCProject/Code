@@ -33,48 +33,66 @@ int main(int argc, char* argv[])
   int l_arr_sz,l_st_idx,l_ed_idx;
 
   int myid_grid,nprocs_grid;
-  int coord_grid[3];
+  int coord_grid[2];
 
-  int total_points[3]; //3 element array tot keep track of total points
-  int proc_dim[3];     //defining number of dimensions per processor
-  int periodicity[3];
+  int total_points[2]; //3 element array tot keep track of total points
+  int proc_dim[2];     //defining number of dimensions per processor
+  int periodicity[2];
+
+  int l_st_I,l_st_J,l_en_I,l_en_J;
 
   MPI_Comm grid_comm_world;
+
+  //restrict the number of processors to be either 1,2 or 3 at the most for k dir since
+  //lattice size will be bigger for other dimensions.need to employ more resources there
 
   ierr=MPI_Init(&argc,&argv);
   ierr=MPI_Comm_rank(MPI_COMM_WORLD,&my_rank); //get processor rank
   ierr=MPI_Comm_size(MPI_COMM_WORLD,&num_procs);//get total processor num
-
+  
   if(my_rank == 0){
     total_points[IDIR]=NX; //points in i dir
     total_points[JDIR]=NY; //points in j dir
-    total_points[KDIR]=Q;  //points in k dir
+    //total_points[KDIR]=Q;  //points in k dir
 
     proc_dim[IDIR] = 0; // to be populated locally by each processor
     proc_dim[JDIR] = 0; 
-    proc_dim[KDIR] = 0;
+    //proc_dim[KDIR] = 0;
 
-    periodicity[0] = 1;
-    periodicity[1] = 1;
-    periodicity[2] = 1;
+    periodicity[IDIR] = 1;
+    periodicity[JDIR] = 1;
+    //cout <<"Num Procs" <<num_procs<<endl;
+    // periodicity[KDIR] = 1;
   }
   //Send call for proc 0,recieve for the others 
-  ierr= MPI_Bcast(&total_points,3,MPI_INT,0,MPI_COMM_WORLD);
+  ierr= MPI_Bcast(&total_points,2,MPI_INT,0,MPI_COMM_WORLD);
   //cout<<"Total Points"<<total_points[0]<<" "<<total_points[1]<<" "<<total_points[2]<<endl;
 
-  ierr= MPI_Bcast(&proc_dim,3,MPI_INT,0,MPI_COMM_WORLD);
+  ierr= MPI_Bcast(&proc_dim,2,MPI_INT,0,MPI_COMM_WORLD);
   //cout<<"Total Points"<<total_points[0]<<" "<<total_points[1]<<" "<<total_points[2]<<endl;
 
+  ierr= MPI_Bcast(&periodicity,2,MPI_INT,0,MPI_COMM_WORLD);
   //if(my_rank==0){
-  ierr= MPI_Dims_create(num_procs,3,proc_dim);
-  // cout<<"Proc in each dimension"<<proc_dim[0]<<" "<<proc_dim[1]<<" "<<proc_dim[2]<<endl;
+  ierr= MPI_Dims_create(num_procs,2,proc_dim);
+  // cout<<"Proc in each dimension"<<proc_dim[0]<<" "<<proc_dim[1]<<endl;
 
-  ierr = MPI_Cart_create(MPI_COMM_WORLD,3,proc_dim,periodicity,1,&grid_comm_world);
-  ierr = MPI_Comm_rank(grid_comm_world,&myid_grid);
+  ierr = MPI_Cart_create(MPI_COMM_WORLD,2,proc_dim,periodicity,1,&grid_comm_world);
+  ierr = MPI_Comm_rank(grid_comm_world,&myid_grid);//gives processor id in grid
   ierr = MPI_Comm_size(grid_comm_world,&nprocs_grid);
-  ierr = MPI_Cart_coords(grid_comm_world,myid_grid,3,coord_grid);
+  ierr = MPI_Cart_coords(grid_comm_world,myid_grid,2,coord_grid);
 
-  cout<<"Proc "<<myid_grid<<" Coords " <<coord_grid[0]<<" "<<coord_grid[1]<<" "<<coord_grid[2]<<endl; 
+   cout<<"Proc "<<myid_grid<<" Coords " <<coord_grid[IDIR]<<" "<<coord_grid[JDIR]<<" "<<endl; 
+
+  l_st_I=local_start(coord_grid[IDIR],proc_dim[IDIR],total_points[IDIR]);
+  l_en_I=local_end(coord_grid[IDIR],proc_dim[IDIR],total_points[IDIR]);
+  l_st_J=local_start(coord_grid[JDIR],proc_dim[JDIR],total_points[JDIR]);
+  l_en_J=local_end(coord_grid[JDIR],proc_dim[JDIR],total_points[JDIR]);
+
+  // local_size[IDIR]=local_dim(coord_grid[IDIR],proc_dim[IDIR],total_points[IDIR]);
+  //local_size[JDIR]=local_dim(coord_grid[JDIR],proc_dim[JDIR],total_points[JDIR]);
+  //local_size[KDIR]=local_dim(coord_grid[KDIR],proc_dim[KDIR],total_points[KDIR]);
+  cout<<"Proc "<<myid_grid<<" Local x " <<l_st_I<<" "<<l_en_I<<" Local y "<<l_st_J<<" "<<l_en_J<<endl; 
+
  
   /*
   //these may not be neccessary

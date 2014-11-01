@@ -56,4 +56,6 @@ void eq_and_stream(qr_type fIn[NX*NY*Q], qr_type rho[NX*NY], qr_type ux[NX*NY], 
  //Function description,input parameter,output parameters??
 void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], const size_t& ts);
 
+int local_start(int dir_rank,int dir_num_procs,int dir_t_points);
+int local_end(int dir_rank,int dir_num_procs,int dir_t_points);
 #endif

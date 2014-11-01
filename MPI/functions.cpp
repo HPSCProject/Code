@@ -134,3 +134,17 @@ void write_gaussian(qr_type rho[NX*NY], qr_type ux[NX*NY], qr_type uy[NX*NY], co
   out.close();
   */
 }
+
+
+int local_start(int dir_rank,int dir_num_procs,int dir_t_points)
+{
+  //return((dir_rank+1)*(dir_t_points/dir_num_procs) + dir_rank*(dir_t_points/dir_num_procs));
+  return(dir_rank*(dir_t_points/dir_num_procs)); 
+}
+
+int local_end(int dir_rank,int dir_num_procs,int dir_t_points)
+{
+  //return((dir_rank+1)*(dir_t_points/dir_num_procs) + dir_rank*(dir_t_points/dir_num_procs));
+  return((dir_rank+1)*(dir_t_points/dir_num_procs)); 
+}
+
