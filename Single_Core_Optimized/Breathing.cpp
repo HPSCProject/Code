@@ -53,6 +53,21 @@ int main(int argc, const char* argv[])
 
   init_gaussian(fIn, fOut, wi);
 
+  fstream out;
+  char fname[255];
+  out.open("test_f", ios::out);
+  for (int i = 0; i < 5; ++i)
+  {
+    for (int j = 0; j < 5; ++j)
+    {
+      for (int n = 0; n < Q; ++n)
+      {
+        out << fIn[i][j][n] << endl;
+      }
+    }
+  }
+
+  /*
   for (int ts = 0; ts < N_STEPS; ++ts)
   {
     if (ts == T_ON)
@@ -79,7 +94,7 @@ int main(int argc, const char* argv[])
     {
       write_gaussian(rho, ux, uy, ts);
     }
-  }
+    }*/
 
   return 0;
 }
