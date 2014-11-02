@@ -26,20 +26,21 @@ void init_gaussian(vector<vector<vector <double> > > * fIn,vector<vector<vector 
   double middlex = nx/2;
   double middley = ny/2;
   int i,j,n;
-  #pragma omp parallel for private(i,j,n) 
+#pragma omp parallel for schedule(static) collapse(2) private(i,j,n) shared(u_sqr, rho, c_dot_u,fEq,x,y,middlex,middley)
+
   for (i = 0; i < nx ; i++) {
     for (j = 0; j < ny ; j++) {
 
       u_sqr = (*ux)[i][j]*(*ux)[i][j] + (*uy)[i][j]*(*uy)[i][j]; 
 
       (*rho)[i][j] = exp( -(0.5/T0)*((i-middlex)/sd)*((i-middlex)/sd) - (0.5/T0)*lambda*lambda*((j-middley)/sd)*((j-middley)/sd) );
-
+      #pragma simd
       for (n = 0; n < Q; n++)
 	{
 	  c_dot_u = c[n][0]*(*ux)[i][j] + c[n][1]*(*uy)[i][j]; 
 	 
 	  fEq = wi[n]*((*rho)[i][j]);
-
+	  //#pragma omp critical
 	  (*fIn)[i][j][n] = fEq;
 	  (*fOut)[i][j][n] = (*fIn)[i][j][n];
 	}
@@ -63,7 +64,7 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
 
   double cdotX,udotX;
   int i,j,n;
-  #pragma omp parallel for private(i,j,n,c_dot_u,c_sqr)
+  #pragma omp parallel for schedule(static) private(i,j,n,c_dot_u,c_sqr) collapse(2) shared(rho,ux,uy,u_sqr,force,cdotX,udotX,x,y,middlex,middley) 
   for (i = 0; i < nx; i++) {
     for (j = 0; j < ny; j++) {
 
@@ -74,7 +75,7 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
       (*rho)[i][j]=0.0;
       (*ux)[i][j]=0.0;
       (*uy)[i][j]=0.0;
-	            
+  	            
       for (n = 0; n < Q; n++)
 	{
 	  (*rho)[i][j] = (*rho)[i][j]+(*fIn)[i][j][n]; // rho
@@ -138,9 +139,11 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
   //     }
   //   }
   // }
-  #pragma omp parallel for private(i,j,n)
+  
+  #pragma omp parallel for collapse(2) shared(in,jn)
   for (i=0; i < nx; i++) {
     for (j=0; j < ny; j++) {
+  //#pragma simd
       for (n=0; n < Q; n++) {
 
 	in = i + int(c[n][0]);
@@ -154,7 +157,7 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
 	  jn = (jn+ny)%ny;
 	  // jn = j;
 	}
- 
+ //#pragma omp critical
 	(*fOut)[i][j][nop[n]] = (*fIn)[in][jn][nop[n]];
       }
     }
@@ -176,7 +179,7 @@ void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * u
   int middlex = nx/2;
   int middley = ny/2;
 
-  sprintf(fname,"data501_omp/Xrho_t%i.dat",ts);
+  sprintf(fname,"data251_omp/Xrho_t%i.dat",ts);
   out.open(fname, ios::out);
   for(int i=0; i < nx; i++){
     int j=middley;
@@ -186,7 +189,7 @@ void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * u
         
   out.close(); 
 
-  sprintf(fname,"data501_omp/Yrho_t%i.dat",ts);
+  sprintf(fname,"data251_omp/Yrho_t%i.dat",ts);
   out.open(fname, ios::out);
   for(int j=0; j < ny; j++){
     int i=middlex;
@@ -196,7 +199,7 @@ void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * u
         
   out.close(); 
 
-  sprintf(fname,"data501_omp/Xux_t%i.dat",ts);
+  sprintf(fname,"data251_omp/Xux_t%i.dat",ts);
   out.open(fname, ios::out);
   for(int i=0; i < nx; i++){
     int j=middley;
@@ -206,7 +209,7 @@ void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * u
         
   out.close(); 
 
-  sprintf(fname,"data501_omp/Yuy_t%i.dat",ts);
+  sprintf(fname,"data251_omp/Yuy_t%i.dat",ts);
   out.open(fname, ios::out);
   for(int j=0; j < ny; j++){
     int i=middlex;

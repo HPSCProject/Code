@@ -99,8 +99,8 @@ int read_partial(const std::string & filename, int num_rows)
     H5D_layout_t layout = H5Pget_layout (dcpl);
    
      hid_t space = H5Dget_space (dset);
- 	 hsize_t dims[2], mdims[2];
- 	 status = H5Sget_simple_extent_dims(space,dims,mdims);
+    hsize_t dims[2], mdims[2];
+    status = H5Sget_simple_extent_dims(space,dims,mdims);
 	 
 	 int dim1 = dims[0];
 	 int dim2 = dims[1];
@@ -126,7 +126,7 @@ int read_partial(const std::string & filename, int num_rows)
         hsize_t count_out[2] = {num_rows,dim2};
 		
 		hid_t memspace = H5Screate_simple(2,dim_out,NULL);   
-		status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL, count_out, NULL);
+		//status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL, count_out, NULL);
 		
 		status = H5Dread (dset, H5T_NATIVE_DOUBLE, memspace, space, H5P_DEFAULT, image);
 		
@@ -224,14 +224,15 @@ int main(int argc, char ** argv)
 	std::stringstream ss;
 	std::string file_name;
 	
-	// Create files if needed...
-	ss << "contiguous." << dim1 << ".hdf5";
+        file_name = argv[1];
+	/*// Create files if needed...
+	ss << "contiguous." << dim1 << ".hdf5";*/
 	file_name = ss.str();
 	file_names.push_back(file_name);
-	write_file(file_name, dim1, dim2);
+	//write_file(file_name, dim1, dim2);
 		
 	ss.str("");
-	ss << "chunked." << dim1 << ".hdf5";
+	//ss << "chunked." << dim1 << ".hdf5";
 	file_name = ss.str();
 	file_names.push_back(file_name);
 	write_chunked_file(file_name, dim1, dim2, dim1, 1);
