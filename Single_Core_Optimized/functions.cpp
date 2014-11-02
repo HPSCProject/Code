@@ -9,6 +9,7 @@ void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q])
   {
     for (int j = 0; j < NY; ++j)
     {
+      #pragma simd
       for (int n = 0; n < Q; ++n)
       {
         fEq = wi[n] * exp(-(0.5 / T0) * ((i - MIDDLE_X) / SD) * ((i - MIDDLE_X) / SD) - (0.5 / T0) * LAMBDA
@@ -23,7 +24,7 @@ void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q])
 
 void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux, qr_type **uy, const int c[Q][D], const double wi[Q], const int nop[Q], const bool& ftrue)
 {
-  bool notify = true;
+  //bool notify = true;
   qr_type u_sqr, c_dot_u, force;
   qr_type x, y, temp, fEq;
 
@@ -61,20 +62,20 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
       	if (ftrue)
         {
       	  force = -(1.0 / T0) * (((c[n][0] * x) + (c[n][1] * y)) - ((ux[i][j] * x) + (uy[i][j] * y))) * fEq / SD;
-      	  if (notify)
+      	  /*if (notify)
           {
       	    cout << "potential is on" << endl;
       	    notify = false;
-      	  }
+      	  }*/
       	}
       	else
         {
       	  force = 0.0;
-      	  if (notify)
+      	  /*if (notify)
           {
       	    cout << "potential is off" << endl;
       	    notify = false;
-      	  }
+      	  }*/
       	}
 
 	    fIn[i][j][n] = fIn[i][j][n] * (1.0 - OMEGA) + OMEGA * fEq + force;
@@ -88,6 +89,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
   {
     for (int j = 0; j < NY; ++j)
     {
+      #pragma simd
       for (int n = 0; n < Q; ++n)
       {
         in = i + int(c[n][0]);
@@ -152,4 +154,11 @@ void write_gaussian(qr_type **rho, qr_type **ux, qr_type **uy, const int& ts)
   }
 
   out.close();
+}
+
+void get_walltime(double& wcTime)
+{
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
+  wcTime = (double)(tp.tv_sec + tp.tv_usec/1000000.0);
 }

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cstring>
+#include <sys/time.h>
 
 // PREPROCESSOR MACROS
 #define ROUND(a) 	(round(a))
@@ -29,8 +30,8 @@ typedef double qr_type;
 #define DT_SIM		int(ROUND(DT_REAL*WX_REAL*SD))	// Description
 #define LAMBDA 		qr_type(1.0)					// Description
 
-#define T_OFF 		int(10)							// Description
-#define T_ON 		int((T_OFF + DT_SIM))			// Description
+#define T_OFF 		int(10)							// Time step to turn potential off.
+#define T_ON 		int((T_OFF + DT_SIM))			// Time step to turn potential back on.
 
 #define T0 			qr_type((1.0 / 3.0))			// Description
 
@@ -38,7 +39,7 @@ typedef double qr_type;
 #define W2 			qr_type((1.0 / 9.0))			// Description
 #define W3 			qr_type((1.0 / 36.0))			// Description
 
-#define Q 			int(9)							// number of velocities that connect one lattice node to another. 
+#define Q 			int(9)							// Number of velocities that connect one lattice node to another. 
 													// Shown below, labeled with their index in array "c" from left to right:
 													//    \  |  /   c[6] c[2] c[5]
 													//   --  .  --  c[3] c[0] c[1]
@@ -59,13 +60,16 @@ using namespace std;
 * Now just write your data, and continue on in time calculating density and fluid velocity from the particles distribution function and propogating the particles around the simulation like we just did!
 */
 
-//Function description,input parameter,output parameters??
+// Initializes the values in both fIn and fOut to step 0 values.
 void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q]);
 
- //Function description,input parameter,output parameters??
+ // Performs one step. Description about what does to each input param?
 void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux, qr_type **uy, const int c[Q][D], const double wi[Q], const int nop[Q], const bool& ftrue);
 
- //Function description,input parameter,output parameters??
+ // Writes out rho, ux, and uy to data files.
 void write_gaussian(qr_type **rho, qr_type **ux, qr_type **uy, const int& ts);
+
+// Get the current wall time.
+void get_walltime(double& wcTime);
 
 #endif
