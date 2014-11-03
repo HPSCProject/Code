@@ -10,7 +10,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
-// #include <omp.h>
+#include <sys/time.h>
+#include <omp.h>
 
 #define Q 9
 #define D 2
@@ -24,20 +25,24 @@ void init_gaussian(vector<vector<vector <double> > > * fIn,vector<vector<vector 
 
   double middlex = nx/2;
   double middley = ny/2;
+  int i,j,n;
 
-  for (int i = 0; i < nx ; i++) {
-    for (int j = 0; j < ny ; j++) {
+  // #pragma omp parallel for schedule(static) collapse(2) private(i,j,n) shared(u_sqr, rho, c_dot_u,fEq,x,y,middlex,middley)
+   //#pragma omp parallel for schedule(static) collapse(2) private(i,j,n) shared(u_sqr,fEq)
+#pragma omp parallel for schedule(static) collapse(2) private(i,j,n,u_sqr,c_dot_u,fEq)
+  for (i = 0; i < nx ; i++) {
+    for (j = 0; j < ny ; j++) {
 
       u_sqr = (*ux)[i][j]*(*ux)[i][j] + (*uy)[i][j]*(*uy)[i][j]; 
 
       (*rho)[i][j] = exp( -(0.5/T0)*((i-middlex)/sd)*((i-middlex)/sd) - (0.5/T0)*lambda*lambda*((j-middley)/sd)*((j-middley)/sd) );
-
-      for (int n = 0; n < Q; n++)
+      //      #pragma simd
+      for (n = 0; n < Q; n++)
 	{
 	  c_dot_u = c[n][0]*(*ux)[i][j] + c[n][1]*(*uy)[i][j]; 
 	 
 	  fEq = wi[n]*((*rho)[i][j]);
-
+	  //#pragma omp critical
 	  (*fIn)[i][j][n] = fEq;
 	  (*fOut)[i][j][n] = (*fIn)[i][j][n];
 	}
@@ -60,9 +65,11 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
   double c_sqr;
 
   double cdotX,udotX;
-
-  for (int i = 0; i < nx; i++) {
-    for (int j = 0; j < ny; j++) {
+  int i,j,n;
+  //  #pragma omp parallel for schedule(static) private(i,j,n,c_dot_u,c_sqr) collapse(2) shared(rho,ux,uy,u_sqr,force,cdotX,udotX,x,y,middlex,middley) 
+#pragma omp parallel for schedule(static) private(i,j,n,c_dot_u,c_sqr,cdotX,udotX) collapse(2) shared(fEq,fIn,rho,ux,uy)  
+  for (i = 0; i < nx; i++) {
+    for (j = 0; j < ny; j++) {
 
       x = (i-middlex)/sd;
       y = lambda*lambda*(j-middley)/sd;
@@ -71,8 +78,8 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
       (*rho)[i][j]=0.0;
       (*ux)[i][j]=0.0;
       (*uy)[i][j]=0.0;
-	            
-      for (int n = 0; n < Q; n++)
+      //      #pragma omp for nowait 	            
+      for (n = 0; n < Q; n++)
 	{
 	  (*rho)[i][j] = (*rho)[i][j]+(*fIn)[i][j][n]; // rho
 	  (*ux)[i][j] = (*ux)[i][j]+(c[n][0])*((*fIn)[i][j][n]); // ux
@@ -83,8 +90,8 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
       (*uy)[i][j] = (*uy)[i][j]/(*rho)[i][j];
 
       u_sqr = ((*ux)[i][j])*((*ux)[i][j]) + ((*uy)[i][j])*((*uy)[i][j]);
-
-      for (int n = 0; n < Q; n++) {
+    
+      for (n = 0; n < Q; n++) {
 
 	c_dot_u = (c[n][0])*((*ux)[i][j]) + (c[n][1])*((*uy)[i][j]);
 
@@ -97,16 +104,10 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
 
 	if (ftrue == 1) {
 	  force = -(1.0/T0)*(cdotX-udotX)*fEq[n]/sd;
-	  if (i==0 && j==0 && n==0) {
-	    cout << "potential is on" << endl;
-	  }
-	}
+	 	}
 	else if (ftrue == 0) {
 	  force = 0.0;
-	  if (i==0 && j==0 && n==0) {
-	    cout << "potential is off" << endl;
-	  }
-	}
+	 	}
 	else {
 	  cout << "ftrue should be either zero or one, please and thanks." << endl;
 	}
@@ -116,29 +117,12 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
     }
   }
 
-      // Check The moments:
-  //     check_rho = 0.0;
-  //     check_ux = 0.0;
-  //     check_uy = 0.0;
-  //     for (int n = 0; n < Q; n++) {
-
-  //     	check_rho = check_rho + fEq[n];
-  //     	check_ux = check_ux + (c[n][0])*fEq[n];
-  //     	check_uy = check_uy + (c[n][1])*fEq[n];
-  //     }
-
-  //     check_ux = check_ux/check_rho;
-  //     check_uy = check_uy/check_rho;
-
-  //     if (i==nx/2 && j==ny/5) {
-  //     	cout << "after_rho = " << check_rho << "\t after_ux = " << check_ux << "\t after_uy = " << check_uy << endl;
-  //     }
-  //   }
-  // }
-
-  for (int i=0; i < nx; i++) {
-    for (int j=0; j < ny; j++) {
-      for (int n=0; n < Q; n++) {
+      //#pragma omp parallel for collapse(2) shared(in,jn)
+#pragma omp parallel for private(i,j,n,in,jn) collapse(2) 
+  for (i=0; i < nx; i++) {
+    for (j=0; j < ny; j++) {
+  //#pragma simd
+      for (n=0; n < Q; n++) {
 
 	in = i + int(c[n][0]);
 	jn = j + int(c[n][1]);
@@ -151,12 +135,19 @@ void eq_and_stream(vector<vector<vector <double> > > * fIn,vector<vector<vector 
 	  jn = (jn+ny)%ny;
 	  // jn = j;
 	}
- 
+ //#pragma omp critical
 	(*fOut)[i][j][nop[n]] = (*fIn)[in][jn][nop[n]];
       }
     }
   }
 }
+
+void get_walltime(double* wcTime) {
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
+  *wcTime = (double)(tp.tv_sec + tp.tv_usec/1000000.0);
+}
+
 
 void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * ux, vector<vector <double> > * uy, int nx, int ny, double sd, int ts) {
 
@@ -166,7 +157,7 @@ void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * u
   int middlex = nx/2;
   int middley = ny/2;
 
-  sprintf(fname,"data/Xrho_t%i.dat",ts);
+  sprintf(fname,"data1001_omp/Xrho_t%i.dat",ts);
   out.open(fname, ios::out);
   for(int i=0; i < nx; i++){
     int j=middley;
@@ -176,7 +167,7 @@ void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * u
         
   out.close(); 
 
-  sprintf(fname,"data/Yrho_t%i.dat",ts);
+  sprintf(fname,"data1001_omp/Yrho_t%i.dat",ts);
   out.open(fname, ios::out);
   for(int j=0; j < ny; j++){
     int i=middlex;
@@ -186,7 +177,7 @@ void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * u
         
   out.close(); 
 
-  sprintf(fname,"data/Xux_t%i.dat",ts);
+  sprintf(fname,"data1001_omp/Xux_t%i.dat",ts);
   out.open(fname, ios::out);
   for(int i=0; i < nx; i++){
     int j=middley;
@@ -196,7 +187,7 @@ void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * u
         
   out.close(); 
 
-  sprintf(fname,"data/Yuy_t%i.dat",ts);
+  sprintf(fname,"data1001_omp/Yuy_t%i.dat",ts);
   out.open(fname, ios::out);
   for(int j=0; j < ny; j++){
     int i=middlex;
@@ -210,23 +201,22 @@ void write_gaussian(vector<vector <double> > * rho, vector<vector <double> > * u
 
 int main(int argc, const char * argv[])
 {
-  int nx = 501;
-  int ny = 501;
-  int nsteps = 1000;
-  double sd = 50.0;
+
+  int nx = atoi( argv[1] );
+  int ny = atoi( argv[2] );
+  double sd = atof( argv[3] );
+  int nsteps = atoi( argv[4] ); 
+
   double omega = 1.0;
+  int meas_steps = 10;
 
   double dtreal = 12; // micro-seconds
   double wxreal = 0.000785398; // micro-Hz
   int dtsim = round( dtreal*wxreal*sd );
-  // double lambda = 0.0345955;
-
-  // double lambda = double(nx)/double(ny);
-  // double lambda = 0.035;
+ 
   double lambda = 1.0;
  
-  cout << "dtsim = " << dtsim << endl;
-
+ 
   int t_off = 10; // time step to turn potential off
   int t_on = t_off + dtsim; // time step to turn it back on
 
@@ -256,6 +246,10 @@ int main(int argc, const char * argv[])
 
   init_gaussian(&fIn,&fOut,&rho,&ux,&uy,c,wi,lambda,nx,ny,sd,T0,omega);   
 
+  double S,E;
+
+  get_walltime(&S);
+
   for (int ts=0; ts < nsteps; ts++) {
 
     if (ts == t_off) {
@@ -269,8 +263,15 @@ int main(int argc, const char * argv[])
 
     fIn = fOut;
     
-    write_gaussian(&rho,&ux,&uy,nx,ny,sd,ts);
+    if (ts%meas_steps==0) {
+      write_gaussian(&rho,&ux,&uy,nx,ny,sd,ts);
+    }
   }
+
+  get_walltime(&E);
+
+  printf("Problem Size: nx=%d, ny=%d, sd=%f, nsteps=%d",nx,ny,sd,nsteps);
+  printf("Walltime %f s \n",E-S);
 
   return 0;
 }
