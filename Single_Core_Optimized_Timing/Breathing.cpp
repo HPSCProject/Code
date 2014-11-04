@@ -5,7 +5,7 @@ using namespace std;
 
 int main(int argc, const char* argv[])
 {
-  double write_start, write_time;
+  double write_start(0), write_time (0);
     double main_start = get_walltime();
   const int c[Q][D] = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
   const int nop[Q] = {0, 3, 4, 1, 2, 7, 8, 5, 6};
