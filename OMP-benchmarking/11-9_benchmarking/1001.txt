@@ -1,0 +1,35 @@
+Serial:
+dtsim = 2
+Problem Size: NX=1001, NY=1001, SD=200.000000, N_STEPS=250
+Walltime 57.557311s
+
+OpenMP:
+dtsim = 2
+Number of threads for initialization:2
+Problem Size: NX=1001, NY=1001, SD=200.000000, N_STEPS=250
+Walltime 30.072926s
+
+dtsim = 2
+Number of threads for initialization:4
+Problem Size: NX=1001, NY=1001, SD=200.000000, N_STEPS=250
+Walltime 22.598222s
+
+dtsim = 2
+Number of threads for initialization:6
+Problem Size: NX=1001, NY=1001, SD=200.000000, N_STEPS=250
+Walltime 17.159834s
+
+dtsim = 2
+Number of threads for initialization:8
+Problem Size: NX=1001, NY=1001, SD=200.000000, N_STEPS=250
+Walltime 15.331021s
+
+dtsim = 2
+Number of threads for initialization:10
+Problem Size: NX=1001, NY=1001, SD=200.000000, N_STEPS=250
+Walltime 14.826196s
+
+dtsim = 2
+Number of threads for initialization:12
+Problem Size: NX=1001, NY=1001, SD=200.000000, N_STEPS=250
+Walltime 16.090764s
