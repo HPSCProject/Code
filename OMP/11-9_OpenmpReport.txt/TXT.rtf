@@ -1,0 +1,10 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fnil\fcharset0 TrebuchetMS;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\ri720\sa240
+
+\f0\fs28 \cf0 When we apply OpenMP on original code, OpenMP fail to speed up at some thread. The fact is that  many loops include dependency variables, it makes computational imbalance.   PARALLEL SECTIONS construct is unbalanced when the number of processors is not an even divisor of 10. Therefore, in original code can only speed up at 2 and 10 threads. \
+To overcome computational imbalance,  we need to deal with dependency problem. After modifying dependency code into different independent function,  it solves imbalance problem. In addition, loop now can be vectorized by simd. Besides OpenMP, it is one of the reasons why the code can run faster.  \
+}
