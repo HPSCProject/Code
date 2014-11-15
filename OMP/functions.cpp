@@ -1,193 +1,166 @@
 #include "functions.h"
-#include <iostream>
-#include <time.h>
-
+#include <omp.h>
 using namespace std;
-//clock_t start, end; 
-void init_gaussian(vector<vector<vector<double> > >* fIn, vector<vector<vector<double> > >* fOut, vector<vector<double> >* rho,
-                   vector<vector<double> >* ux, vector<vector<double> >* uy, int c[Q][D], double wi[Q], double lambda, int nx, int ny, double sd, double T0, double omega)
+
+void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q])
 {
-
-  double u_sqr, c_dot_u, fEq;
-  double x, y,tm=0.0;
-
-  double middlex = nx / 2;
-  double middley = ny / 2;
-  clock_t start, end;
-  start=clock();
-  #pragma omp for  
-  
-  for (int i = 0; i < nx; ++i)
+  qr_type fEq;
+  int i,j,n;
+  #pragma omp for collapse(2) schedule(static) private(i,j,n,fEq)
+  for (i = 0; i < NX; ++i)
   {
-    	//start=clock();
-    for (int j = 0; j < ny; ++j)
+    for (j = 0; j < NY; ++j)
     {
-
-      u_sqr = ((*ux)[i][j] * (*ux)[i][j]) + ((*uy)[i][j] * (*uy)[i][j]);
-
-      // Data type mixing possible precision loss.
-      (*rho)[i][j] = exp(-(0.5 / T0) * ((i - middlex) / sd) * ((i - middlex) / sd) - (0.5 / T0) * lambda
-                     * lambda * ((j - middley) / sd) * ((j - middley) / sd));
-
-      for (int n = 0; n < Q; ++n)
-	    {
-        c_dot_u = (c[n][0] * (*ux)[i][j]) + (c[n][1] * (*uy)[i][j]);
-
-	      fEq = wi[n] * (*rho)[i][j];
-
-	      (*fIn)[i][j][n] = fEq;
-	      (*fOut)[i][j][n] = (*fIn)[i][j][n];
-	    }
+      #pragma simd
+      for (n = 0; n < Q; ++n)
+      {
+        fEq = wi[n] * exp(-(0.5 / T0) * ((i - MIDDLE_X) / SD) * ((i - MIDDLE_X) / SD) - (0.5 / T0) * LAMBDA
+                    * LAMBDA * ((j - MIDDLE_Y) / SD) * ((j - MIDDLE_Y) / SD));
+      	
+        fIn[i][j][n] = fEq;
+      	fOut[i][j][n] = fEq;
+      }
     }
   }
-  end=clock();
-  tm=(start-end);
-  printf("Time for init_gaussian: %ld",start);
-  printf("%ld",end);
 }
 
-void eq_and_stream(vector<vector<vector<double> > >* fIn, vector<vector<vector<double> > >* fOut, vector<vector<double> >* rho,
-                   vector<vector<double> >* ux, vector<vector<double> >* uy, int c[Q][D], double wi[Q], int nop[Q], double lambda,
-                   int nx, int ny, double T0, double omega, double sd, bool ftrue)
+void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux, qr_type **uy, const int c[Q][D], const double wi[Q], const int nop[Q], const bool& ftrue)
 {
-
-  double u_sqr, c_dot_u, force;
-  int in, jn;
-  double x, y;
-  double fEq[Q];
-
-  double check_rho, check_ux, check_uy;
-
-  double middlex = nx / 2;
-  double middley = ny / 2;
-
-  double c_sqr,tm;
-
-  double cdotX,udotX;
-  clock_t start, end;
-  start=clock();
-  #pragma omp for //reduction(+:c_dot_u)
-  
-  for (int i = 0; i < nx; ++i)
+  //bool notify = true;
+  qr_type u_sqr, c_dot_u, force;
+  qr_type x, y, temp, fEq;
+#pragma omp parallel for schedule(static) private(i,j,n,c_dot_u,c_sqr,cdotX,udotX) collapse(2) shared(fEq,fIn,rho,ux,uy)  
+  for (int i = 0; i < NX; ++i)
   {
-    for (int j = 0; j < ny; ++j)
+    for (int j = 0; j < NY; ++j)
     {
-      // More possible precision loss.
-      x = (i - middlex) / sd;
-      y = lambda * lambda * (j - middley) / sd;
+      // Set to zero before summing
+      rho[i][j] = qr_type(0.0);
+      ux[i][j] = qr_type(0.0);
+      uy[i][j] = qr_type(0.0);
 
-      //set to zero before summing
-      (*rho)[i][j] = 0.0;
-      (*ux)[i][j] = 0.0;
-      (*uy)[i][j] = 0.0;
+      x = (i - MIDDLE_X) / SD;
+      y = LAMBDA * LAMBDA * (j - MIDDLE_Y) / SD;
 
       for (int n = 0; n < Q; ++n)
 	    {
-        (*rho)[i][j] = (*rho)[i][j] + (*fIn)[i][j][n]; // rho
-	      (*ux)[i][j] = (*ux)[i][j] + (c[n][0] * (*fIn)[i][j][n]); // ux
-	      (*uy)[i][j] = (*uy)[i][j] + (c[n][1] * (*fIn)[i][j][n]); // uy
+	  	  temp = fIn[i][j][n];
+        rho[i][j] += temp;
+	      ux[i][j] += c[n][0] * temp;
+	      uy[i][j] += c[n][1] * temp;
 	    }
 
-      (*ux)[i][j] = (*ux)[i][j] / (*rho)[i][j];
-      (*uy)[i][j] = (*uy)[i][j] / (*rho)[i][j];
+      ux[i][j] /= rho[i][j];
+      uy[i][j] /= rho[i][j];
 
-      u_sqr = ((*ux)[i][j] * (*ux)[i][j]) + ((*uy)[i][j] * (*uy)[i][j]);
-      
+      u_sqr = (ux[i][j] * ux[i][j]) + (uy[i][j] * uy[i][j]);
+
       for (int n = 0; n < Q; ++n)
       {
+      	c_dot_u = (c[n][0] * ux[i][j]) + (c[n][1] * uy[i][j]);
 
-      	c_dot_u = (c[n][0] * (*ux)[i][j]) + (c[n][1] * (*uy)[i][j]);
-
-      	c_sqr = (c[n][0] * c[n][0]) + (c[n][1] * c[n][1]);
-
-      	fEq[n] = wi[n] * (*rho)[i][j] * (1.0 + (1.0 / T0) * c_dot_u + (1.0 / (2.0 * T0 * T0)) * c_dot_u * c_dot_u - (1.0 / (2.0 * T0)) * u_sqr);
-
-      	cdotX = (c[n][0] * x) + (c[n][1] * y);
-      	udotX = ((*ux)[i][j] * x) + ((*uy)[i][j] * y);
+      	fEq = wi[n] * rho[i][j] * (1.0 + (1.0 / T0) * c_dot_u + (1.0 / (2.0 * T0 * T0)) * c_dot_u * c_dot_u - (1.0 / (2.0 * T0)) * u_sqr);
 
       	if (ftrue)
         {
-      	  force = -(1.0 / T0) * (cdotX - udotX) * fEq[n] / sd;
-      	  if (i == 0 && j == 0 && n == 0)
+      	  force = -(1.0 / T0) * (((c[n][0] * x) + (c[n][1] * y)) - ((ux[i][j] * x) + (uy[i][j] * y))) * fEq / SD;
+      	  /*if (notify)
           {
       	    cout << "potential is on" << endl;
-      	  }
+      	    notify = false;
+      	  }*/
       	}
       	else
         {
       	  force = 0.0;
-      	  if (i == 0 && j == 0 && n == 0)
+      	  /*if (notify)
           {
       	    cout << "potential is off" << endl;
-      	  }
+      	    notify = false;
+      	  }*/
       	}
 
-	      (*fIn)[i][j][n] = ((*fIn)[i][j][n] * (1.0 - omega)) + omega * fEq[n] + force;
+	    fIn[i][j][n] = fIn[i][j][n] * (1.0 - OMEGA) + OMEGA * fEq + force;
       }
     }
   }
-  end=clock();
-  tm=(start-end)/CLOCKS_PER_SEC;
-  //printf("Time for eq_and_stream:%ld",tm);
+
+  int in, jn;
+
+  for (int i = 0; i < NX; ++i)
+  {
+    for (int j = 0; j < NY; ++j)
+    {
+      #pragma simd
+      for (int n = 0; n < Q; ++n)
+      {
+        in = i + int(c[n][0]);
+        jn = j + int(c[n][1]);
+
+        if (in > NX - 1 || in < 0)
+        {
+          in = (in + NX) % NX;                                                                                                                                                                                        
+        }
+        if (jn > NY-1 || jn < 0)
+        {
+          jn = (jn + NY) % NY;                                                                                                                                                                                        
+        }
+
+        fOut[i][j][nop[n]] = fIn[in][jn][nop[n]];
+      }
+    }
+  }
 }
 
-void write_gaussian(vector<vector<double> >* rho, vector<vector<double> >* ux, vector<vector<double> >* uy, int nx, int ny, double sd, int ts)
+void write_gaussian(qr_type **rho, qr_type **ux, qr_type **uy, const int& ts)
 {
   fstream out;
   char fname[255];
-  float sinv=1.0 / sd;
-  int middlex = nx / 2;
-  int middley = ny / 2;
-  double tm=0.0;
-
-  sprintf(fname,"data/Xrho_t%i.dat", ts);
-  //out.open(fname, ios::out);
-  out.open("data.txt");
-
- // #pragma omp for
- 
-  for(int i = 0; i < nx; ++i)
-  {
-    int j = middley;
-    out << (i - middlex) * sinv << "\t";
-    out << (*rho)[i][j] << "\n";
-  }
-
-  out.close();
-
-  sprintf(fname,"data/Yrho_t%i.dat", ts);
+  
+  sprintf(fname, "data/Xrho_t%i.dat", ts);
   out.open(fname, ios::out);
-  //#pragma omp for
-  for(int j = 0; j < ny; ++j)
-  {
-    int i = middlex;
-    out << (j - middley) * sinv << "\t";
-    out << (*rho)[i][j] << "\n";
+  for(int i = 0; i < NX; ++i)
+  {    
+    out << (i - MIDDLE_X) * SIN_V << "\t";
+    out << rho[i][MIDDLE_Y] << "\n";
   }
 
   out.close();
 
-  sprintf(fname,"data/Xux_t%i.dat", ts);
+  sprintf(fname, "data/Yrho_t%i.dat", ts);
   out.open(fname, ios::out);
-  #pragma omp for
-  for(int i = 0; i < nx; ++i)
+  for(int j = 0; j < NY; ++j)
   {
-    int j = middley;
-    out << (i - middlex) * sinv << "\t";
-    out << (*ux)[i][j] << "\n";
+    out << (j - MIDDLE_Y) * SIN_V << "\t";
+    out << rho[MIDDLE_X][j] << "\n";
   }
 
   out.close();
 
-  sprintf(fname,"data/Yuy_t%i.dat", ts);
+  sprintf(fname, "data/Xux_t%i.dat", ts);
   out.open(fname, ios::out);
-  #pragma omp for
-  for(int j = 0; j < ny; ++j)
+  for(int i = 0; i < NX; ++i)
   {
-    int i = middlex;
-    out << (j - middley) * sinv << "\t";
-    out << (*uy)[i][j] << "\n";
+    out << (i - MIDDLE_X) * SIN_V << "\t";
+    out << ux[i][MIDDLE_Y] << "\n";
   }
 
   out.close();
+
+  sprintf(fname, "data/Yuy_t%i.dat", ts);
+  out.open(fname, ios::out);
+  for(int j = 0; j < NY; ++j)
+  {
+    out << (j - MIDDLE_Y) * SIN_V << "\t";
+    out << uy[MIDDLE_X][j] << "\n";
+  }
+
+  out.close();
+}
+
+void get_walltime(double& wcTime)
+{
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
+  wcTime = (double)(tp.tv_sec + tp.tv_usec/1000000.0);
 }

@@ -1,83 +1,96 @@
 //  Edited and expanded by PR, Aug 2013
-
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <fstream>
-#include <iostream>
-#include <iomanip>
-#include <locale>
-#include <sstream>
-#include <string>
-#include <vector>
 #include "functions.h"
-// #include <omp.h>
-
-
 
 using namespace std;
 
 int main(int argc, const char* argv[])
 {
-  int nx = 10;
-  int ny = 10;
-  int nsteps = 20;  // are these time steps??
-  double sd = 50.0;   // standard deviation
-  double omega = 1.0; // ??
+  const int c[Q][D] = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
+  const int nop[Q] = {0, 3, 4, 1, 2, 7, 8, 5, 6};
+  const double wi[9] = {W1, W2, W2, W2, W2, W3, W3, W3, W3};
 
-  double dtreal = 12;                  // micro-seconds
-  double wxreal = 0.000785398;         // micro-Hz
-  int dtsim = round(dtreal*wxreal*sd); // round result to nearest int
-  double lambda = 1.0;
+  bool ftrue = true;	// true indicates trapping potential is turned on; false indicates trapping potential is off.
 
-  cout << "dtsim = " << dtsim << endl;
+  cout << "dtsim = " << DT_SIM << endl;
 
-  int t_off = 10;           // time step to turn potential off
-  int t_on = t_off + dtsim; // time step to turn it back on
+  // Input & output arrays.
+  qr_type ***fIn, ***fOut;
 
-  bool ftrue = true; // true if potential on, false if potential off
-
-  double u_sqr, c_dot_u, force;
-  int in, jn;
-
-  double T0 = 1.0/3.0;
-
-  vector<vector<vector <double> > > fIn (nx, vector<vector <double> >(ny, vector<double>(Q, 0.0)));
-
-  vector<vector<vector<double> > > fOut(nx, vector<vector <double> >(ny, vector<double>(Q, 0.0)));
-
-  vector<vector<double> > rho (nx, vector<double>(ny, 1.0));
-  vector<vector<double> > ux (nx, vector<double>(ny, 0.0));
-  vector<vector<double> > uy (nx, vector<double>(ny, 0.0));
-
-  int c[Q][D] = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1} ,{1, -1}};
-
-  int nop[Q] = {0, 3, 4, 1, 2, 7, 8, 5, 6};
-
-  double w1 = 4.0 / 9.0;
-  double w2 = 1.0 / 9.0;
-  double w3 = 1.0 / 36.0;
-  double wi[] = {w1, w2, w2, w2, w2, w3, w3, w3, w3};
-
-  init_gaussian(&fIn, &fOut, &rho, &ux, &uy, c, wi, lambda, nx, ny, sd, T0, omega);
- 
-  for (int ts = 0; ts < nsteps; ++ts)
+  // Fill input & output arrays w/ 0.
+  fIn = new qr_type**[NX];
+  fOut = new qr_type**[NX];
+  for(int i = 0; i < NX; ++i)
   {
-    if (ts == t_on)
+    fIn[i] = new qr_type*[NY];
+    fOut[i] = new qr_type*[NY];
+    for(int j = 0; j < NY; ++j)
+    {
+      fIn[i][j] = new qr_type[Q];
+      memset(fIn[i][j], qr_type(0.0), F_SIZE);
+      fOut[i][j] = new qr_type[Q];
+      memset(fOut[i][j], qr_type(0.0), F_SIZE);
+    }
+  }
+
+  // Declare the macroscopic variables for the fluid
+  qr_type **rho;  // Fluid density
+  qr_type **ux;	  // Fluid velocity in the x direction
+  qr_type **uy;	  // Fluid velocity in the y direction
+
+  // Fill rho, ux, uy.
+  rho = new qr_type*[NX];
+  ux = new qr_type*[NX];
+  uy = new qr_type*[NX];
+  for(int i = 0; i < NX; ++i)
+  {
+    rho[i] = new qr_type[NY];
+    memset(rho[i], qr_type(0.0), TWOD_SIZE);
+    ux[i] = new qr_type[NY];
+    memset(ux[i], qr_type(0.0), TWOD_SIZE);
+    uy[i] = new qr_type[NY];
+    memset(uy[i], qr_type(0.0), TWOD_SIZE);
+  }
+
+  init_gaussian(fIn, fOut, wi);
+
+  // Time it.
+  double start = 0.0;
+  double end = 0.0;
+
+  get_walltime(start);
+
+  for (int ts = 0; ts < N_STEPS; ++ts)
+  {
+    if (ts == T_ON)
     {
       ftrue = true;
     }
-    else if (ts == t_off)
+    else if (ts == T_OFF)
     {
       ftrue = false;
     }
 
-    eq_and_stream(&fIn, &fOut, &rho, &ux, &uy, c, wi, nop, lambda, nx, ny, T0, omega, sd, ftrue);
+    eq_and_stream(fIn, fOut, rho, ux, uy, c, wi, nop, ftrue);
 
-    fIn = fOut;
-
-    write_gaussian(&rho, &ux, &uy, nx, ny, sd, ts);
+    // fIn = fOut
+    for(int i = 0; i < NX; ++i)
+    {
+      for(int j = 0; j < NY; ++j)
+      {
+        memcpy(fIn[i][j], fOut[i][j], F_SIZE);
+      }
+    }
+    
+    if (ts % 10 == 0)
+    {
+      write_gaussian(rho, ux, uy, ts);
+    }
   }
+
+  get_walltime(end);
+
+  printf("Problem Size: NX=%d, NY=%d, SD=%f, N_STEPS=%d\n", NX, NY, SD, N_STEPS);
+  printf("Walltime %fs\n", end - start);
 
   return 0;
 }
