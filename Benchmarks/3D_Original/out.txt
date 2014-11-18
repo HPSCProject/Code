@@ -1,0 +1,2 @@
+Problem Size: nx=125, ny=125, nz=125, sd=25.000000, nsteps=250Walltime 1240.319980 s 
+Problem Size: nx=251, ny=251, nz=251, sd=50.000000, nsteps=250Walltime 9657.464340 s 
