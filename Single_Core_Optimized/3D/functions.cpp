@@ -46,6 +46,7 @@ void eq(qr_type**** fIn, qr_type**** fOut, qr_type*** rho, qr_type*** ux, qr_typ
       	uy[i][j][k] = qr_type(0.0);
       	ux[i][j][k] = qr_type(0.0);
       	            
+        //#pragma simd
       	for (int n = 0; n < Q; ++n)
       	{
           temp = fIn[i][j][k][n];
@@ -91,6 +92,7 @@ void eq(qr_type**** fIn, qr_type**** fOut, qr_type*** rho, qr_type*** ux, qr_typ
 
       	u_sqr = (ux[i][j][k] * ux[i][j][k]) + (uy[i][j][k] * uy[i][j][k]) + (uz[i][j][k] * uz[i][j][k]);
 
+        //#pragma simd
       	for (int n = 0; n < Q; ++n)
         {
       	  c_dot_u = (c[n][0] * ux[i][j][k]) + (c[n][1] * uy[i][j][k]) + (c[n][2] * uz[i][j][k]);
@@ -193,4 +195,11 @@ void write_gaussian(qr_type*** rho, qr_type*** ux, const int& ts)
     out << setprecision(15) << ux[i][MIDDLE_Y][MIDDLE_Z] << "\n";
   }        
   out.close();  
+}
+
+void get_walltime(double& wcTime)
+{
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
+  wcTime = (double)(tp.tv_sec + tp.tv_usec/1000000.0);
 }

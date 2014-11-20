@@ -68,4 +68,7 @@ void stream(qr_type**** fIn, qr_type**** fOut, const double c[Q][D]);
 
 void write_gaussian(qr_type*** rho, qr_type*** ux, const int& ts);
 
+// Get the current wall time.
+void get_walltime(double& wcTime);
+
 #endif

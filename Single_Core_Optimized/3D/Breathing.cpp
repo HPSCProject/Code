@@ -66,6 +66,12 @@ int main(int argc, const char * argv[])
   }
      
   make_lattice(fIn, fOut, c, wi);
+
+  // Time it.
+  double start = 0.0;
+  double end = 0.0;
+
+  get_walltime(start);
     
   // Perform steps.
   for(int ts = 0; ts <= STEPS; ++ts)
@@ -78,6 +84,49 @@ int main(int argc, const char * argv[])
     } 
     stream(fIn, fOut, c);
   }
+
+  get_walltime(end);
+
+  printf("Problem Size: NX=%d, NY=%d, NZ=%d, SD=%f, N_STEPS=%d\n", NX, NY, NZ, SD, STEPS);
+  printf("Walltime: %fs\n", end - start);
+
+  // Free allocated memory
+  for(int i = 0; i < NX; ++i)
+  {
+    for(int j = 0; j < NY; ++j)
+    {
+      delete[] rho[i][j];
+      delete[] ux[i][j];
+      delete[] uy[i][j];
+      delete[] uz[i][j];
+    }
+    delete[] rho[i];
+    delete[] ux[i];
+    delete[] uy[i];
+    delete[] uz[i];
+  }
+  delete[] rho;
+  delete[] ux;
+  delete[] uy;
+  delete[] uz;
+
+  for(int i = 0; i < NX; ++i)
+  {
+    for(int j = 0; j < NY; ++j)
+    {
+      for(int k = 0; k < NZ; ++k)
+      {
+        delete[] fIn[i][j][k];
+        delete[] fOut[i][j][k];
+      }
+      delete[] fIn[i][j];
+      delete[] fOut[i][j];
+    }
+    delete[] fIn[i];
+    delete[] fOut[i];
+  }
+  delete[] fIn;
+  delete[] fOut;
 
   return 0;
 }
