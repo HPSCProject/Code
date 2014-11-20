@@ -5,30 +5,26 @@ using namespace std;
 
 int main(int argc, const char* argv[])
 {
-  const int c[Q][D] = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
-  const int nop[Q] = {0, 3, 4, 1, 2, 7, 8, 5, 6};
-  const double wi[9] = {W1, W2, W2, W2, W2, W3, W3, W3, W3};
+  const int c[Q][D] = {{0, 0}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}};
+  const int nop[Q] = {0, 5, 6, 7, 8, 1, 2, 3, 4};
+  const double wi[Q] = {W1, W3, W2, W3, W2, W3, W2, W3, W2};
 
   bool ftrue = true;	// true indicates trapping potential is turned on; false indicates trapping potential is off.
 
   cout << "dtsim = " << DT_SIM << endl;
 
   // Input & output arrays.
-  qr_type ***fIn, ***fOut;
+  qr_type ***fIn;
 
-  // Fill input & output arrays w/ 0.
+  // Fill result array w/ 0.
   fIn = new qr_type**[NX];
-  fOut = new qr_type**[NX];
   for(int i = 0; i < NX; ++i)
   {
     fIn[i] = new qr_type*[NY];
-    fOut[i] = new qr_type*[NY];
     for(int j = 0; j < NY; ++j)
     {
       fIn[i][j] = new qr_type[Q];
       memset(fIn[i][j], qr_type(0.0), F_SIZE);
-      fOut[i][j] = new qr_type[Q];
-      memset(fOut[i][j], qr_type(0.0), F_SIZE);
     }
   }
 
@@ -51,7 +47,7 @@ int main(int argc, const char* argv[])
     memset(uy[i], qr_type(0.0), TWOD_SIZE);
   }
 
-  init_gaussian(fIn, fOut, wi);
+  init_gaussian(fIn, wi);
 
   // Time it.
   double start = 0.0;
@@ -70,16 +66,7 @@ int main(int argc, const char* argv[])
       ftrue = false;
     }
 
-    eq_and_stream(fIn, fOut, rho, ux, uy, c, wi, nop, ftrue);
-
-    // fIn = fOut
-    for(int i = 0; i < NX; ++i)
-    {
-      for(int j = 0; j < NY; ++j)
-      {
-        memcpy(fIn[i][j], fOut[i][j], F_SIZE);
-      }
-    }
+    eq_and_stream(fIn, rho, ux, uy, c, wi, nop, ftrue);
     
     if (ts % 10 == 0)
     {
@@ -91,6 +78,27 @@ int main(int argc, const char* argv[])
 
   printf("Problem Size: NX=%d, NY=%d, SD=%f, N_STEPS=%d\n", NX, NY, SD, N_STEPS);
   printf("Walltime %fs\n", end - start);
+
+  // Free allocated memory
+  for(int i = 0; i < NX; ++i)
+  {
+    delete[] rho[i];
+    delete[] ux[i];
+    delete[] uy[i];
+  }
+  delete[] rho;
+  delete[] ux;
+  delete[] uy;
+
+  for(int i = 0; i < NX; ++i)
+  {
+    for(int j = 0; j < NY; ++j)
+    {
+      delete[] fIn[i][j];
+    }
+    delete[] fIn[i];
+  }
+  delete[] fIn;
 
   return 0;
 }

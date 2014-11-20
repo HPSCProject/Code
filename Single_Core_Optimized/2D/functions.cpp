@@ -1,10 +1,8 @@
 #include "functions.h"
 using namespace std;
 
-void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q])
+void init_gaussian(qr_type ***fIn, const double wi[Q])
 {
-  qr_type fEq;
-
   for (int i = 0; i < NX; ++i)
   {
     for (int j = 0; j < NY; ++j)
@@ -12,17 +10,14 @@ void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q])
       #pragma simd
       for (int n = 0; n < Q; ++n)
       {
-        fEq = wi[n] * exp(-(0.5 / T0) * ((i - MIDDLE_X) / SD) * ((i - MIDDLE_X) / SD) - (0.5 / T0) * LAMBDA
-                    * LAMBDA * ((j - MIDDLE_Y) / SD) * ((j - MIDDLE_Y) / SD));
-      	
-        fIn[i][j][n] = fEq;
-      	fOut[i][j][n] = fEq;
+        fIn[i][j][n] = wi[n] * exp(-(0.5 / T0) * ((i - MIDDLE_X) / SD) * ((i - MIDDLE_X) / SD) - (0.5 / T0) * LAMBDA
+                       * LAMBDA * ((j - MIDDLE_Y) / SD) * ((j - MIDDLE_Y) / SD));
       }
     }
   }
 }
 
-void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux, qr_type **uy, const int c[Q][D], const double wi[Q], const int nop[Q], const bool& ftrue)
+void eq_and_stream(qr_type ***fIn, qr_type **rho, qr_type **ux, qr_type **uy, const int c[Q][D], const double wi[Q], const int nop[Q], const bool& ftrue)
 {
   //bool notify = true;
   qr_type u_sqr, c_dot_u, force;
@@ -78,7 +73,12 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
       	  }*/
       	}
 
-	    fIn[i][j][n] = fIn[i][j][n] * (1.0 - OMEGA) + OMEGA * fEq + force;
+	      fIn[i][j][n] = fIn[i][j][n] * (1.0 - OMEGA) + OMEGA * fEq + force;
+      }
+
+      for (int n = 1; n <= (Q - 1) / 2; ++n)
+      {
+        swap(fIn[i][j][n], fIn[i][j][nop[n]]);
       }
     }
   }
@@ -90,21 +90,21 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
     for (int j = 0; j < NY; ++j)
     {
       #pragma simd
-      for (int n = 0; n < Q; ++n)
+      for (int n = 1; n <= (Q - 1) / 2; ++n)
       {
         in = i + int(c[n][0]);
         jn = j + int(c[n][1]);
 
         if (in > NX - 1 || in < 0)
         {
-          in = (in + NX) % NX;                                                                                                                                                                                        
+          in %= NX;                                                                                                                                                                                        
         }
         if (jn > NY-1 || jn < 0)
         {
-          jn = (jn + NY) % NY;                                                                                                                                                                                        
+          jn %= NY;                                                                                                                                                                                       
         }
 
-        fOut[i][j][nop[n]] = fIn[in][jn][nop[n]];
+        swap(fIn[i][j][nop[n]], fIn[in][jn][n]);
       }
     }
   }

@@ -61,10 +61,10 @@ using namespace std;
 */
 
 // Initializes the values in both fIn and fOut to step 0 values.
-void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q]);
+void init_gaussian(qr_type ***fIn, const double wi[Q]);
 
  // Performs one step. Description about what does to each input param?
-void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux, qr_type **uy, const int c[Q][D], const double wi[Q], const int nop[Q], const bool& ftrue);
+void eq_and_stream(qr_type ***fIn, qr_type **rho, qr_type **ux, qr_type **uy, const int c[Q][D], const double wi[Q], const int nop[Q], const bool& ftrue);
 
  // Writes out rho, ux, and uy to data files.
 void write_gaussian(qr_type **rho, qr_type **ux, qr_type **uy, const int& ts);
