@@ -45,16 +45,16 @@ void make_lattice(vector<vector<vector<vector <double> > > > *fIn,vector<vector<
 	    
 	    rho = exp( -(0.5/T0)*((i-nx/2)/sd)*((i-nx/2)/sd)*defx - (0.5/T0)*((j-ny/2)/sd)*((j-ny/2)/sd)*defy - (0.5/T0)*lambda*lambda*((k-nz/2)/sd)*((k-nz/2)/sd)*defz )*sqrt(defx*defy*defz); 
 
-	    Teff = sqrt(defx*defy*defz);
+	    Teff = sqrt(defx*defy*defz); // temperature T(t) not T(x,t)
 
 	    for (int n = 0; n < Q; n++)
 	      {
 
-		c_sqr = (c[n][0]*c[n][0])+(c[n][1]*c[n][1])+(c[n][2]*c[n][2]);	
+		c_sqr = (c[n][0]*c[n][0])+(c[n][1]*c[n][1])+(c[n][2]*c[n][2]);  // used below
 
-		(*fIn)[i][j][k][n] =  wi[n]*rho*( 1.0 + (c_dot_u/T0)*(1.0 + ((Teff-1.0)/(2.0*T0))*(c_sqr - 5.0*T0)) + (c_dot_u*c_dot_u)/(2.0*T0*T0) - u_sqr/(2.0*T0) + ((Teff-1.0)/(2.0*T0))*(c_sqr-3.0*T0) + (c_dot_u*c_dot_u*c_dot_u)/(6.0*T0*T0*T0) - (u_sqr*c_dot_u)/(2.0*T0*T0) ); // newer
+		(*fIn)[i][j][k][n] =  wi[n]*rho*( 1.0 + (c_dot_u/T0)*(1.0 + ((Teff-1.0)/(2.0*T0))*(c_sqr - 5.0*T0)) + (c_dot_u*c_dot_u)/(2.0*T0*T0) - u_sqr/(2.0*T0) + ((Teff-1.0)/(2.0*T0))*(c_sqr-3.0*T0) + (c_dot_u*c_dot_u*c_dot_u)/(6.0*T0*T0*T0) - (u_sqr*c_dot_u)/(2.0*T0*T0) ); // calculates equilibrium distribution
 
-		(*fOut)[i][j][k][n] = (*fIn)[i][j][k][n];
+		(*fOut)[i][j][k][n] = (*fIn)[i][j][k][n]; // copies fin to fout
 	  
 	      }
 	  }
@@ -63,22 +63,22 @@ void make_lattice(vector<vector<vector<vector <double> > > > *fIn,vector<vector<
 }
 
 void eq(int nx, int ny, int nz, vector<vector<vector<vector <double> > > > *fIn,vector<vector<vector<vector <double> > > > *fOut,vector<vector<vector <double> > > *rho, vector<vector<vector <double> > > *ux,vector<vector<vector <double> > > *uy,vector<vector<vector <double> > > *uz,double c[Q][D], double wi[Q], double sd, double omega, double lambda,int* ts, double T0, double dt, double ca,int ftrue){
-   double c_dot_u, u_sqr, c_sqr;
+   double c_dot_u, u_sqr, c_sqr; // micro v, macro v
 
-   double fEq[Q];
-   double force[Q];
+   double fEq[Q]; // temp velocity space distribution
+   double force[Q]; // potential forcing
 
-   double cdotX, udotX;
+   double cdotX, udotX; // dot product of velocity and position
 
    double x, y, z;
    double middlex = nx/2;
    double middley = ny/2;
    double middlez = nz/2;
 
-   double Ptot=0,Ntot=0;
-   double Teff=1.;
+   double Ptot=0,Ntot=0; // Potential energy num particles
+   double Teff=1.; // Temp
 
-  for (int i = 0; i < nx; i++) {
+  for (int i = 0; i < nx; i++) {    // iterates through grid
     for (int j = 0; j < ny; j++) {
       for (int k = 0; k < nz; k++) {  
            
@@ -92,9 +92,8 @@ void eq(int nx, int ny, int nz, vector<vector<vector<vector <double> > > > *fIn,
 	(*uy)[i][j][k]=0.0;
 	(*uz)[i][j][k]=0.0;
 	            
-	for (int n = 0; n < Q; n++)
+	for (int n = 0; n < Q; n++) //iterates through stencil
 	  {
-
 	    (*rho)[i][j][k]=(*rho)[i][j][k]+(*fIn)[i][j][k][n]; // rho
 	    (*ux)[i][j][k]=(*ux)[i][j][k]+((c[n][0])*(*fIn)[i][j][k][n]); // ux
 	    (*uy)[i][j][k]=(*uy)[i][j][k]+((c[n][1])*(*fIn)[i][j][k][n]); // uy
@@ -255,39 +254,39 @@ int main(int argc, const char * argv[])
     
   // index and size variables
   int nx ,ny, nz,steps,meas_steps;
-  double sd, omega;
+  double sd, omega; // omega is inverse viscosity -- 1/tau
 
   nx = 251;
   ny = 251;
   nz = 251;
 
-  sd = 50.0;
+  sd = 50.0; // stadnard deviation
   steps = 10000;
-  meas_steps = 5;
-  omega = 1.0;
+  meas_steps = 5; // how often to write
+  omega = 1.0; // what we are looking for!!
 
   // STANDARD LATTICE BOLTZMANN
-  double dt = 1.0;
+  double dt = 1.0; // delta t
   double ca = 1.0; // MUST CHANGE CODE TO MULTIPLY VECTORS BY CA IF CA IS NO LONGER UNITY!
 
-  double lambda = 1.0;
+  double lambda = 1.0; // ecccentricity of distribution
 
-  char cbuffer[1000];
+  char cbuffer[1000]; // write out stuff
   sprintf(cbuffer,"data");
   outdir = cbuffer;
-
+    // fin is particle distribution
   vector<vector<vector<vector <double> > > > fIn (nx,vector<vector<vector <double> > > (ny, vector<vector <double> >(nz, vector<double>(Q,0.0))));
-  
+    // temp mem storage for fin
   vector<vector<vector<vector <double> > > > fOut (nx, vector<vector<vector <double> > >(ny, vector<vector <double> >(nz, vector<double>(Q,0.0))));
-
+    // density
   vector<vector<vector <double> > > rho (nx,vector<vector <double> >(ny, vector<double>(nz,0.0)));
-
+    // speeds
   vector<vector<vector <double> > > ux (nx,vector<vector <double> >(ny, vector<double>(nz,0.0)));
 
   vector<vector<vector <double> > > uy (nx,vector<vector <double> >(ny, vector<double>(nz,0.0)));
 
   vector<vector<vector <double> > > uz (nx,vector<vector <double> >(ny, vector<double>(nz,0.0)));
-  
+    // stencil
   double c[Q][3] = {{0.0,0.0,0.0},{1.0,0.0,0.0},{-1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,-1.0,0.0},{0.0,0.0,1.0},{0.0,0.0,-1.0},{1.0,1.0,0.0},{-1.0,-1.0,0.0},{1.0,-1.0,0.0},{-1.0,1.0,0.0},{1.0,0.0,1.0},{-1.0,0.0,-1.0},{1.0,0.0,-1.0},{-1.0,0.0,1.0},{0.0,1.0,1.0},{0.0,-1.0,-1.0},{0.0,1.0,-1.0},{0.0,-1.0,1.0},{1.0,1.0,1.0},{1.0,1.0,-1.0},{1.0,-1.0,1.0},{-1.0,1.0,1.0},{-1.0,-1.0,1.0},{-1.0,1.0,-1.0},{1.0,-1.0,-1.0},{-1.0,-1.0,-1.0},{3.0,0.0,0.0},{-3.0,0.0,0.0},{0.0,3.0,0.0},{0.0,-3.0,0.0},{0.0,0.0,3.0},{0.0,0.0,-3.0},{3.0,3.0,3.0},{3.0,3.0,-3.0},{3.0,-3.0,3.0},{-3.0,3.0,3.0},{-3.0,-3.0,3.0},{-3.0,3.0,-3.0},{3.0,-3.0,-3.0},{-3.0,-3.0,-3.0}};
   
   // weights 
@@ -300,9 +299,9 @@ int main(int argc, const char * argv[])
   
   double wi[] = {w0,w1,w1,w1,w1,w1,w1,w2,w2,w2,w2,w2,w2,w2,w2,w2,w2,w2,w2,w3,w3,w3,w3,w3,w3,w3,w3,w4,w4,w4,w4,w4,w4,w5,w5,w5,w5,w5,w5,w5,w5};
   
-  double T0 = 1.0 - sqrt(2.0/5.0);
+  double T0 = 1.0 - sqrt(2.0/5.0); // lattice speed of sound
   
-  int ftrue = 1;
+  int ftrue = 1;  //potential on/off
      
     make_lattice(&fIn,&fOut,c,wi,nx,ny,nz,sd,lambda,T0);
     
