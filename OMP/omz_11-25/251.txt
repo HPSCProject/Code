@@ -1,0 +1,24 @@
+Problem Size: NX=251, NY=251, SD=50.000000, N_STEPS=250
+Walltime 7652.136362s
+Thread 2
+Walltime 2164.829393s
+Thread 4
+Walltime 1821.036122s
+Thread 6
+Walltime 1551.989532s
+Thread 8
+Walltime 1458.806854s
+Thread 10
+Walltime 1701.936160s
+Thread 12
+Walltime 1436.028891s
+Thread 14
+Walltime 1501.501497s
+Thread 16
+Walltime 1471.643770s
+Thread 18
+Walltime 1501.781272s
+Thread 20
+Walltime 5250.127239s
+
+
