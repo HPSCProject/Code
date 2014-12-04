@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cstring>
+#include <omp.h>
 
 // PREPROCESSOR MACROS
 #define ROUND(a) 	(round(a))
