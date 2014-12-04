@@ -14,7 +14,7 @@ void make_lattice(qr_type**** fIn, qr_type**** fOut, const double c[Q][D], const
 	      rho = exp(-T0_H * ((i - MIDDLE_X) / SD) * ((i - MIDDLE_X) / SD) * DEF_X - T0_H * ((j - MIDDLE_Y) / SD) * ((j - MIDDLE_Y) / SD) * DEF_Y
               - T0_H * LAMBDA_SQR * ((k - MIDDLE_Z) / SD) * ((k - MIDDLE_Z) / SD) * DEF_Z) * T_EFF;
 
-        //#pragma simd
+        #pragma simd
 	      for (int n = 0; n < Q; ++n)
 	      {
 		      c_sqr = (c[n][0] * c[n][0]) + (c[n][1] * c[n][1]) + (c[n][2] * c[n][2]);
@@ -131,7 +131,7 @@ void stream(qr_type**** fIn, qr_type**** fOut, const double c[Q][D])
     {
       for (int k = 0; k < NZ; ++k)
       {
-        //#pragma simd
+        #pragma simd
 	      for(int n = 0; n < Q; ++n)
         {	  
       	  in = i + int(c[n][0]);
