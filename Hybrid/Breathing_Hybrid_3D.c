@@ -3,8 +3,10 @@
 #include <mpi.h>
 #include <math.h>
 
+#define T0 1
+
 void init(double* rho, double* ux, double* uy, double* df, int* local_dims, int* spacial_dims, int* local_index, double lambda, double sd, double* weight);
-//T0
+
 
 int main(int argc, char** argv)
 {
@@ -83,16 +85,17 @@ int main(int argc, char** argv)
 
 void init(double* rho, double* ux, double* uy, double* df, int* local_dims, int* spacial_dims, int* local_index, double lambda, double sd, double* weight)
 {
+    int i, j, k;
     int imax = local_dims[0], jmax = local_dims[1];
     int nx = spacial_dims[0], ny = spacial_dims[1];
-    double xbar = nx/2, ybar = ny/2;
-    double c0, c1, c2, c3, val1, val2;
+    double ibar = nx/2, jbar = ny/2;
+    double c0, c1, c2, c3, val;
     c0 = -1/(2*T0*sd*sd);
     c1 = lambda*lambda;
     
-    for(int j = 0; j < jmax; ++j) {
+    for(j = 0; j < jmax; ++j) {
         c2 = (local_index[1]+j-jbar) * (local_index[1]+j-jbar);
-        for(int i = 0; i < imax; ++i) {
+        for(i = 0; i < imax; ++i) {
             c3 = (local_index[0] + i - ibar) * (local_index[0] + i - ibar);
             val = exp(c0 * ( c3 + (c1 * c2)));
             rho[(i+1)+((j+1)*(imax+2))] = val;
