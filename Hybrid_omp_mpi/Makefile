@@ -4,7 +4,7 @@ LD = mpicc
 OPT = -Ofast -simd -xhost -opemnp
 
 Breathing.exe: Breathing_2d.o functions.o 
-	$(LD) -o Breathing.exe Breathing_2d.o functions.o 
+	$(LD) $(OPT) -o Breathing.exe Breathing_2d.o functions.o 
 
 Breathing_2d.o: Breathing_2d.cpp 
 	$(CC) $(OPT) -c Breathing_2d.cpp 
