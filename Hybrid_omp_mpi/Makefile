@@ -1,7 +1,7 @@
 CC = mpicc
 LD = mpicc
 
-OPT = -Ofast -simd -xhost -opemnp
+OPT = -Ofast -simd -xhost -openmp
 
 Breathing.exe: Breathing_2d.o functions.o 
 	$(LD) $(OPT) -o Breathing.exe Breathing_2d.o functions.o 
