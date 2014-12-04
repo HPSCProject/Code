@@ -1,0 +1,18 @@
+Problem Size: NX=125, NY=125, NZ=125, SD=25.000000, N_STEPS=250
+Walltime 951.861539s
+Thread:2
+Walltime 584.994349s
+Thread:4
+Walltime 327.380138s
+Thread:6
+Walltime 260.283109s
+Thread:8
+Walltime 250.636112s
+Thread:10
+Walltime 255.046343s
+Thread:12
+Walltime 227.633683s
+
+
+
+

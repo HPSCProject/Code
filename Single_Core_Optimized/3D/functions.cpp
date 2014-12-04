@@ -1,3 +1,6 @@
+#include "functions.h"
+using namespace std;
+
 void make_lattice(qr_type**** fIn, qr_type**** fOut, const double c[Q][D], const double wi[Q])
 {
   double c_sqr, rho;
@@ -11,7 +14,7 @@ void make_lattice(qr_type**** fIn, qr_type**** fOut, const double c[Q][D], const
 	      rho = exp(-T0_H * ((i - MIDDLE_X) / SD) * ((i - MIDDLE_X) / SD) * DEF_X - T0_H * ((j - MIDDLE_Y) / SD) * ((j - MIDDLE_Y) / SD) * DEF_Y
               - T0_H * LAMBDA_SQR * ((k - MIDDLE_Z) / SD) * ((k - MIDDLE_Z) / SD) * DEF_Z) * T_EFF;
 
-        //#pragma simd
+        #pragma simd
 	      for (int n = 0; n < Q; ++n)
 	      {
 		      c_sqr = (c[n][0] * c[n][0]) + (c[n][1] * c[n][1]) + (c[n][2] * c[n][2]);
@@ -111,7 +114,7 @@ void eq(qr_type**** fIn, qr_type**** fOut, qr_type*** rho, qr_type*** ux, qr_typ
       	    force = 0.0;
       	  }
 
-      	  fOut[i][j][k][n] = ((1.0 - OMEGA) * fIn[i][j][k][n]) + (OMEAG * fEq) + force;
+      	  fOut[i][j][k][n] = ((1.0 - OMEGA) * fIn[i][j][k][n]) + (OMEGA * fEq) + force;
       	}
       }
     }
@@ -128,8 +131,8 @@ void stream(qr_type**** fIn, qr_type**** fOut, const double c[Q][D])
     {
       for (int k = 0; k < NZ; ++k)
       {
-        //#pragma simd
-	      for(int n = 0; n< Q; ++n)
+        #pragma simd
+	      for(int n = 0; n < Q; ++n)
         {	  
       	  in = i + int(c[n][0]);
       	  jn = j + int(c[n][1]);
@@ -137,15 +140,18 @@ void stream(qr_type**** fIn, qr_type**** fOut, const double c[Q][D])
 
       	  if (in > NX - 1 || in < 0)
           {
-            in %= NX;
+            //in %= NX;
+            in = (in + NX) % NX;
       	  }
       	  if (jn > NY - 1 || jn < 0)
           {
-      	    jn %= NY;
+      	    //jn %= NY;
+            jn = (jn + NY) % NY;
       	  } 
       	  if (kn > NZ - 1 || kn < 0)
           {
-      	    kn %= NZ;
+      	    //kn %= NZ;
+            kn = (kn + NZ) % NZ;
       	  }
 
       	  fIn[in][jn][kn][n] = fOut[i][j][k][n];

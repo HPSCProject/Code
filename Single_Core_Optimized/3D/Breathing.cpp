@@ -4,13 +4,13 @@ using namespace std;
 
 int main(int argc, const char * argv[])
 {
-  const qr_type c[Q][D] = {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, -1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, -1.0},
+  const double c[Q][D] = {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, -1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, -1.0},
                            {1.0, 1.0, 0.0}, {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {-1.0, 1.0, 0.0}, {1.0, 0.0, 1.0}, {-1.0, 0.0, -1.0}, {1.0, 0.0, -1.0},
                            {-1.0, 0.0, 1.0}, {0.0, 1.0, 1.0}, {0.0, -1.0, -1.0}, {0.0, 1.0, -1.0}, {0.0, -1.0, 1.0}, {1.0, 1.0, 1.0}, {1.0, 1.0, -1.0},
                            {1.0, -1.0, 1.0}, {-1.0, 1.0, 1.0}, {-1.0, -1.0, 1.0}, {-1.0, 1.0, -1.0}, {1.0, -1.0, -1.0}, {-1.0, -1.0, -1.0}, {3.0, 0.0, 0.0},
                            {-3.0, 0.0, 0.0}, {0.0, 3.0, 0.0}, {0.0, -3.0, 0.0}, {0.0, 0.0, 3.0}, {0.0, 0.0, -3.0}, {3.0, 3.0, 3.0}, {3.0, 3.0, -3.0},
                            {3.0, -3.0, 3.0}, {-3.0, 3.0, 3.0}, {-3.0, -3.0, 3.0}, {-3.0, 3.0, -3.0}, {3.0, -3.0, -3.0}, {-3.0, -3.0, -3.0}};
-  const qr_type wi[Q] = {W0, W1, W1, W1, W1, W1, W1, W2, W2, W2, W2, W2, W2, W2, W2, W2, W2, W2, W2, W3, W3, W3, W3, W3, W3, W3, W3, W4, W4, W4, W4, W4, W4,
+  const double wi[Q] = {W0, W1, W1, W1, W1, W1, W1, W2, W2, W2, W2, W2, W2, W2, W2, W2, W2, W2, W2, W3, W3, W3, W3, W3, W3, W3, W3, W4, W4, W4, W4, W4, W4,
                          W5, W5, W5, W5, W5, W5, W5, W5};
   bool ftrue = true;
 
@@ -32,8 +32,8 @@ int main(int argc, const char * argv[])
       {
         fIn[i][j][k] = new qr_type[Q];
         fOut[i][j][k] = new qr_type[Q];
-        memcpy(fIn[i][j][k], qr_type(0.0), F_SIZE);
-        memcpy(fOut[i][j][k], qr_type(0.0), F_SIZE);
+        memset(fIn[i][j][k], qr_type(0.0), F_SIZE);
+        memset(fOut[i][j][k], qr_type(0.0), F_SIZE);
       }
     }
   }
@@ -58,10 +58,10 @@ int main(int argc, const char * argv[])
       ux[i][j] = new qr_type[NZ];
       uy[i][j] = new qr_type[NZ];
       uz[i][j] = new qr_type[NZ];
-      memcpy(rho[i][j], qr_type(0.0), 3D_SIZE);
-      memcpy(ux[i][j], qr_type(0.0), 3D_SIZE);
-      memcpy(uy[i][j], qr_type(0.0), 3D_SIZE);
-      memcpy(uz[i][j], qr_type(0.0), 3D_SIZE);
+      memset(rho[i][j], qr_type(0.0), D_SIZE);
+      memset(ux[i][j], qr_type(0.0), D_SIZE);
+      memset(uy[i][j], qr_type(0.0), D_SIZE);
+      memset(uz[i][j], qr_type(0.0), D_SIZE);
     }
   }
      
@@ -81,7 +81,8 @@ int main(int argc, const char * argv[])
     if (ts % MEAS_STEPS == 0)
     {
 	    write_gaussian(rho, ux, ts);
-    } 
+    }
+    
     stream(fIn, fOut, c);
   }
 

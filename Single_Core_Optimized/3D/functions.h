@@ -3,6 +3,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <stdlib.h>
 #include <stdio.h>
 #include <cstring>
@@ -53,7 +54,7 @@ typedef double qr_type;
 #define T0_H		qr_type(0.5 / T0)											// Description.
 
 #define F_SIZE		int((SIZE_OF(qr_type) * Q))									// Size of the innermost fIn/fOut array.
-#define 3D_SIZE		int((SIZE_OF(qr_type) * NZ))								// Size of the innermost rho/ux/uy array.
+#define D_SIZE		int((SIZE_OF(qr_type) * NZ))								// Size of the innermost rho/ux/uy array.
 
 #define WRITE_DIR	"data"														// The directory to which the results are written.
 #define BUFF_SIZE	255															// Filename buffer size.

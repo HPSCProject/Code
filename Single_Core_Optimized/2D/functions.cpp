@@ -97,11 +97,13 @@ void eq_and_stream(qr_type ***fIn, qr_type **rho, qr_type **ux, qr_type **uy, co
 
         if (in > NX - 1 || in < 0)
         {
-          in %= NX;                                                                                                                                                                                        
+          //in %= NX;
+          in = (in + NX) % NX;                                                                                                                                                                                        
         }
         if (jn > NY-1 || jn < 0)
         {
-          jn %= NY;                                                                                                                                                                                       
+          //jn %= NY;         
+          jn = (jn + NY) % NY;                                                                                                                                                                              
         }
 
         swap(fIn[i][j][nop[n]], fIn[in][jn][n]);
