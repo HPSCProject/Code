@@ -46,7 +46,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
     gl_x = i+bl_x-1;
     if(gl_x < 0) gl_x = x_t_points-1;
     else if(gl_x == x_t_points) gl_x = 0;
-    //#pragma omp parallel for
+    #pragma omp parallel for schedule(static) private(gl_x,gl_y,x,y,force,c_dot_u,u_sqr,fIn,fEq,rho,ux,uy,temp)
     for (int j = 0; j <= l_sz_J+1; ++j)
     {
       gl_y=j+bl_y-1;

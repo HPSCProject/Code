@@ -15,8 +15,8 @@
 // CONSTANT, PREPROCESSOR DEFINTIONS
 typedef double qr_type;
 
-#define NX 			int(10)						// Lattice size in x direction.
-#define NY 			int(10) 						// Lattice size in y direction.
+#define NX 			int(100)						// Lattice size in x direction.
+#define NY 			int(100) 						// Lattice size in y direction.
 #define MIDDLE_X 	int((NX / 2))					// Middle x index value of the stream, rounded down.
 #define MIDDLE_Y 	int((NY / 2))					// Middle y index value of the stream, rounded down.
 
