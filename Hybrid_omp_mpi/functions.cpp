@@ -54,9 +54,8 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
     for (int j = 0; j <= l_sz_J+1; ++j)
     {
         cout << "spawned the threads bitch!" << endl;
-        if(true) {
-            cout << "Hello I am process #"  << endl;
-            //<< << my_rank << " my j is " << j << " thread #"omp_get_thread_num() << endl;
+        if(introduced) {
+            cout << "Hello I am process #"  << my_rank << " thread #" << omp_get_thread_num() << "and my j is " << j << endl;
             introduced = false;
         }
         
@@ -66,11 +65,10 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
       else if(gl_y == y_t_points) gl_y = 0;
       // if(my_rank == 0 ) cout <<"L_sz_I " <<gl_x<<"L_sz_J "<<gl_y<<endl;
       // Set to zero before summing
-        cout << "ij is " << i << " " << j << endl;
-      rho[i][j] = qr_type(0.0);
-        cout << "What up bitch i'm here bitch!" << endl;
-      ux[i][j] = qr_type(0.0);
-      uy[i][j] = qr_type(0.0);
+        
+        rho[i][j] = qr_type(0.0);
+        ux[i][j] = qr_type(0.0);
+        uy[i][j] = qr_type(0.0);
         
         
 
