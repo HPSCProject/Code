@@ -62,8 +62,8 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
         
         
       gl_y=j+bl_y-1;
+    if(gl_y < 0) gl_y = y_t_points-1;//FIXME:costly to check for wrap ard condition at all the procs.identify bdry procs and only apply this to them
         cout << "What up bitch i'm here bitch!" << endl;
-      if(gl_y < 0) gl_y = y_t_points-1;//FIXME:costly to check for wrap ard condition at all the procs.identify bdry procs and only apply this to them
       else if(gl_y == y_t_points) gl_y = 0;
       // if(my_rank == 0 ) cout <<"L_sz_I " <<gl_x<<"L_sz_J "<<gl_y<<endl;
       // Set to zero before summing
