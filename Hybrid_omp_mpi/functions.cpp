@@ -19,7 +19,7 @@ void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q],int x_ran
             gl_y=j+bl_y-1;
             if(gl_y < 0) gl_y = y_t_points-1;//FIXME:costly to check for wrap ard condition at all the procs.identify bdry procs and only apply this to them
             else if(gl_y == y_t_points) gl_y = 0;
-            // if(my_rank == 2 ) cout <<"L_sz_I " <<gl_x<<"L_sz_J "<<gl_y<<endl;
+            // if(my_rank == 2 ) //cout <<"L_sz_I " <<gl_x<<"L_sz_J "<<gl_y<<endl;
 #pragma simd
             for (int n = 0; n < Q; ++n)
             {
@@ -38,7 +38,7 @@ double get_walltime()
     struct timeval time;
     if(gettimeofday(&time, NULL))
     {
-        cout << "Error registering wall time." << endl;
+        //cout << "Error registering wall time." << endl;
         return 0;
     }
     return (double)time.tv_sec + (double)time.tv_usec * .000001;
@@ -66,7 +66,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
             gl_y=j+bl_y-1;
             if(gl_y < 0) gl_y = y_t_points-1;//FIXME:costly to check for wrap ard condition at all the procs.identify bdry procs and only apply this to them
             else if(gl_y == y_t_points) gl_y = 0;
-            // if(my_rank == 0 ) cout <<"L_sz_I " <<gl_x<<"L_sz_J "<<gl_y<<endl;
+            // if(my_rank == 0 ) //cout <<"L_sz_I " <<gl_x<<"L_sz_J "<<gl_y<<endl;
             // Set to zero before summing
             
             rho[i][j] = qr_type(0.0);
@@ -99,7 +99,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
                     force = -(1.0 / T0) * (((c[n][0] * x) + (c[n][1] * y)) - ((ux[i][j] * x) + (uy[i][j] * y))) * fEq / SD;
                     if (notify)
                     {
-                        //cout << "potential is on" << endl;
+                        ////cout << "potential is on" << endl;
                         notify = false;
                     }
                 }
@@ -108,7 +108,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
                     force = 0.0;
                     if (notify)
                     {
-                        //cout << "potential is off" << endl;
+                        ////cout << "potential is off" << endl;
                         notify = false;
                     }
                 }
@@ -149,7 +149,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
                  {in = (in + NX) % NX }
                  if (jn > NY-1 || jn < 0)
                  {jn = (jn + NY) % NY; }*/
-                //if(my_rank==0 ) cout <<"Picking"<<in<<","<<jn<<" to fill "<<nop[n]<<endl;
+                //if(my_rank==0 ) //cout <<"Picking"<<in<<","<<jn<<" to fill "<<nop[n]<<endl;
                 fOut[i][j][nop[n]] = fIn[in][jn][nop[n]];
             }
         }
@@ -299,7 +299,7 @@ void cpy_send_buf(qr_type ***fIn,int stop,qr_type *buf,int dir,int end,qr_type *
         for (int j=0;j<Q;j++){
             buf[k]=temp[Q+j];
             buf[Q+k]=temp[(2*Q)+j];
-            if(my_rank == 1)  cout <<"sending "<<k<<"at "<<temp[Q+j]<<endl;
+            //if(my_rank == 1)  //cout <<"sending "<<k<<"at "<<temp[Q+j]<<endl;
             k++;
         }
         
@@ -308,7 +308,7 @@ void cpy_send_buf(qr_type ***fIn,int stop,qr_type *buf,int dir,int end,qr_type *
     else if(dir==1 && end == -1){ //tx data to top
         for(int i=1;i<=stop;i++){
             for (int j=0;j<Q;j++){
-                //if(my_rank == 1) cout <<"Tx"<<fIn[1][i][j]<<endl;
+                //if(my_rank == 1) //cout <<"Tx"<<fIn[1][i][j]<<endl;
                 buf[k]=fIn[1][i][j];
                 k++;
             }
@@ -353,7 +353,7 @@ void cpy_receive_buf(qr_type ***fIn,int stop,qr_type *buf,int dir,int end,qr_typ
             }
         }
         for (int j=0;j<Q;j++){
-            if(my_rank == 3)  cout <<"receiving rx "<<k<<"at "<<buf[k]<<endl;
+            //if(my_rank == 3)  //cout <<"receiving rx "<<k<<"at "<<buf[k]<<endl;
             fIn[0][0][j]=buf[k];
             fIn[stop+1][0][j]=buf[Q+k];
             k++;
@@ -363,7 +363,7 @@ void cpy_receive_buf(qr_type ***fIn,int stop,qr_type *buf,int dir,int end,qr_typ
     else if(dir==1 && end == -1 ){ //rx data from bottom          
         for(int i=1;i<=stop;i++){
             for (int j=0;j<Q;j++){
-                //if(my_rank == 0) cout <<"RX"<<buf[k]<<endl;
+                //if(my_rank == 0) //cout <<"RX"<<buf[k]<<endl;
                 fIn[stop+1][i][j] = buf[k];
                 k++;
             }
