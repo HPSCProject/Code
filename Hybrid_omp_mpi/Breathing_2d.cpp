@@ -326,7 +326,7 @@ int main(int argc, char* argv[])
         if(myid_grid == 0) out.close();
         
     }//end for ts
-    if(rank == 0) {
+    if(my_rank == 0) {
         time2 = get_walltime() - time1;
         cout << "Total Time: " << time2 << endl;
     }
