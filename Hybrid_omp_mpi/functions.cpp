@@ -37,6 +37,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
   bool notify = true;
   qr_type u_sqr, c_dot_u, force;
   qr_type x, y, temp, fEq;
+    bool introduced = true;
 
   int bl_x=local_start(x_rank,x_num_procs,x_t_points);//FIXME:consider changing to long as lattice sz increases
   int bl_y=local_start(y_rank,y_num_procs,y_t_points); 
@@ -46,9 +47,13 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
     gl_x = i+bl_x-1;
     if(gl_x < 0) gl_x = x_t_points-1;
     else if(gl_x == x_t_points) gl_x = 0;
-    #pragma omp parallel for schedule(static) private(gl_x,gl_y,x,y,force,c_dot_u,u_sqr,fIn,fEq,rho,ux,uy,temp)
+    #pragma omp parallel for schedule(static) private(gl_x,gl_y,x,y,force,c_dot_u,u_sqr,fIn,fEq,rho,ux,uy,temp,introduced)
     for (int j = 0; j <= l_sz_J+1; ++j)
     {
+        if(introduced) {
+            cout >> "Hello I am process #" >> my_rank >> " thread #" >> omp_get_thread_num() >> endl;
+            introduced = false;
+        }
       gl_y=j+bl_y-1;
       if(gl_y < 0) gl_y = y_t_points-1;//FIXME:costly to check for wrap ard condition at all the procs.identify bdry procs and only apply this to them
       else if(gl_y == y_t_points) gl_y = 0;
