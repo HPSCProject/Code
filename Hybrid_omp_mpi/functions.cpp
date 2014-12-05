@@ -43,17 +43,14 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
   int bl_x=local_start(x_rank,x_num_procs,x_t_points);//FIXME:consider changing to long as lattice sz increases
   int bl_y=local_start(y_rank,y_num_procs,y_t_points); 
   int gl_x,gl_y;
-    cout << "first for bitch!" << endl;
 #pragma omp parallel for private(gl_x,gl_y,x,y,force,c_dot_u,u_sqr,temp,notify)
   for (int i = 0; i <= l_sz_I+1; ++i)
   {
     gl_x = i+bl_x-1;
     if(gl_x < 0) gl_x = x_t_points-1;
     else if(gl_x == x_t_points) gl_x = 0;
-      cout << "spawn threads bitch!" << endl;
     for (int j = 0; j <= l_sz_J+1; ++j)
     {
-        cout << "spawned the threads bitch!" << endl;
         if(introduced) {
             cout << "Hello I am process #"  << my_rank << " thread #" << omp_get_thread_num() << "and my j is " << j << endl;
             introduced = false;
