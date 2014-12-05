@@ -66,6 +66,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
       else if(gl_y == y_t_points) gl_y = 0;
       // if(my_rank == 0 ) cout <<"L_sz_I " <<gl_x<<"L_sz_J "<<gl_y<<endl;
       // Set to zero before summing
+        cout << "ij is " << i << " " << j << endl;
       rho[i][j] = qr_type(0.0);
         cout << "What up bitch i'm here bitch!" << endl;
       ux[i][j] = qr_type(0.0);
