@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <omp.h>
+#include <sys/time.h>
 
 // PREPROCESSOR MACROS
 #define ROUND(a) 	(round(a))
@@ -68,6 +69,8 @@ void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q],int x_ran
 //Function description,input parameter,output parameters??
 void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux, qr_type **uy, const int c[Q][D], const double wi[Q], const int nop[Q], const bool& ftrue,int x_rank,int x_num_procs,int x_t_points,int y_rank,int y_num_procs,int y_t_points,int my_rank,int l_sz_I,int l_sz_J);
 //Function description,input parameter,output parameters??
+
+double get_walltime();
 
 void write_gaussian(qr_type **rho, qr_type **ux, qr_type **uy, const int& ts,int x_rank,int x_num_procs,int x_t_points,int y_rank,int y_num_procs,int y_t_points);
 

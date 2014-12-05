@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     const int c[Q][D] = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
     const int nop[Q] = {0, 3, 4, 1, 2, 7, 8, 5, 6};
     const double wi[9] = {W1, W2, W2, W2, W2, W3, W3, W3, W3};
-    
+    double time1, time2;
     bool ftrue = true;	// true indicates trapping potential is turned on; false indicates trapping potential is off.
     
     cout << "dtsim = " << DT_SIM << endl;
@@ -68,6 +68,7 @@ int main(int argc, char* argv[])
         
         periodicity[IDIR] = 1;
         periodicity[JDIR] = 1;
+        time1 = get_walltime();
         //cout <<"Num Procs" <<num_procs<<endl;
         // periodicity[KDIR] = 1;
     }
@@ -325,6 +326,10 @@ int main(int argc, char* argv[])
         if(myid_grid == 0) out.close();
         
     }//end for ts
+    if(rank == 0) {
+        time2 = get_walltime() - time1;
+        cout << "Total Time: " << time2 << endl;
+    }
     
     ierr = MPI_Finalize();
     return 0;
