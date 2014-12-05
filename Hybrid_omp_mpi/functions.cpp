@@ -51,7 +51,8 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
     for (int j = 0; j <= l_sz_J+1; ++j)
     {
         if(introduced) {
-            cout << "Hello I am process #" << my_rank << " thread #" << omp_get_thread_num() << endl;
+            cout << "Hello I am process #" << my_rank << " my j is " << j << endl;
+            //" thread #" << omp_get_thread_num() << endl;
             introduced = false;
         }
       gl_y=j+bl_y-1;
