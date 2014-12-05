@@ -1,4 +1,5 @@
 #include "functions.h"
+#include <omp.h>
 using namespace std;
 //x corresponds to a row,y corresponds to col
 void init_gaussian(qr_type ***fIn, qr_type ***fOut, const double wi[Q],int x_rank,int x_num_procs,int x_t_points,int y_rank,int y_num_procs,int y_t_points,int my_rank,int l_sz_I,int l_sz_J)
