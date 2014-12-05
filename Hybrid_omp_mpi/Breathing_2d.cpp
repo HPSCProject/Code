@@ -87,8 +87,9 @@ int main(int argc, char* argv[])
   ierr = MPI_Comm_size(grid_comm_world,&nprocs_grid);
   ierr = MPI_Cart_coords(grid_comm_world,myid_grid,2,coord_grid);
   cout<<"Proc "<<myid_grid<<" Coords " <<coord_grid[IDIR]<<" "<<coord_grid[JDIR]<<" "<<endl; 
-
-
+    int* provided;
+    
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
    //Determine local coordinates
   int local_dim[2];
   for (int i = 0;i<2;i++){
