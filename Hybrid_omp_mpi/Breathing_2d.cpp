@@ -206,15 +206,15 @@ int main(int argc, char* argv[])
             }
         } //end for disp
         
-        if(my_rank==0){
-            for(int i=0;i<Q;i++)
-                cout << "Tx Pt" << fIn[5][5][i]<<endl;
-        }
-        
-        if(my_rank==1){
-            for(int i=0;i<Q;i++)
-                cout << "Rx early Pt" << temp[(Q)+i]<<endl;
-        }
+//        if(my_rank==0){
+//            for(int i=0;i<Q;i++)
+//                //cout << "Tx Pt" << fIn[5][5][i]<<endl;
+//        }
+//        
+//        if(my_rank==1){
+//            for(int i=0;i<Q;i++)
+//               // cout << "Rx early Pt" << temp[(Q)+i]<<endl;
+//        }
         
         for (int disp=-1;disp <2; disp=disp+2)
         {
