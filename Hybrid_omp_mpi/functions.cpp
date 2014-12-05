@@ -44,7 +44,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
   int bl_y=local_start(y_rank,y_num_procs,y_t_points); 
   int gl_x,gl_y;
     cout << "first for bitch!" << endl;
-#pragma omp parallel for private(gl_x,gl_y,x,y,force,c_dot_u,u_sqr,fIn,fEq,rho,ux,uy,temp,introduced,notify)
+#pragma omp parallel for private(gl_x,gl_y,x,y,force,c_dot_u,u_sqr,fIn,fEq,rho,ux,uy,temp,notify)
   for (int i = 0; i <= l_sz_I+1; ++i)
   {
     gl_x = i+bl_x-1;
@@ -62,6 +62,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
         
         
       gl_y=j+bl_y-1;
+        cout << "What up bitch i'm here bitch!" << endl;
       if(gl_y < 0) gl_y = y_t_points-1;//FIXME:costly to check for wrap ard condition at all the procs.identify bdry procs and only apply this to them
       else if(gl_y == y_t_points) gl_y = 0;
       // if(my_rank == 0 ) cout <<"L_sz_I " <<gl_x<<"L_sz_J "<<gl_y<<endl;
@@ -70,7 +71,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
       ux[i][j] = qr_type(0.0);
       uy[i][j] = qr_type(0.0);
         
-        cout << "What up bitch i'm here bitch!" << endl;
+        
 
       x = (gl_x - MIDDLE_X) / SD;
       y = LAMBDA * LAMBDA * (gl_y - MIDDLE_Y) / SD;
