@@ -59,6 +59,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
             //<< omp_get_thread_num() << endl;
             introduced = false;
         }
+        #pragma omp barrier
         cout << "What up bitch i'm here bitch!" << endl;
       gl_y=j+bl_y-1;
       if(gl_y < 0) gl_y = y_t_points-1;//FIXME:costly to check for wrap ard condition at all the procs.identify bdry procs and only apply this to them
