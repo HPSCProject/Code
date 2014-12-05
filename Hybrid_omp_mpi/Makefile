@@ -1,7 +1,7 @@
 CC = mpicxx
 LD = mpicxx
 
-OPT = -O3 -openmp
+OPT = -O3 -openmp -mt_mpi
 
 Breathing.exe: Breathing_2d.o functions.o 
 	$(LD) $(OPT) -o Breathing.exe Breathing_2d.o functions.o 
