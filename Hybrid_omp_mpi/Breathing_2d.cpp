@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 	  ftrue = false;
           //cout<<" Potential is off" <<endl;
 	}
-
+        cout << " made it to eq bitch!" << endl;
       eq_and_stream(fIn, fOut, rho, ux, uy, c, wi, nop, ftrue,coord_grid[JDIR],proc_dim[JDIR],total_points[JDIR],coord_grid[IDIR],proc_dim[IDIR],total_points[IDIR],my_rank,l_sz_I,l_sz_J);
       for(int i = 0; i <=l_sz_I+1; ++i)
 	{
