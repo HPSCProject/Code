@@ -45,13 +45,13 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
   int gl_x,gl_y;
     cout << "first for bitch!" << endl;
 #pragma omp parallel for private(gl_x,gl_y,x,y,force,c_dot_u,u_sqr,fIn,fEq,rho,ux,uy,temp,notify)
-  for (int i = 0; i <= l_sz_I+1; ++i)
+  for (int i = 1; i <= l_sz_I; ++i)
   {
     gl_x = i+bl_x-1;
     if(gl_x < 0) gl_x = x_t_points-1;
     else if(gl_x == x_t_points) gl_x = 0;
       cout << "spawn threads bitch!" << endl;
-    for (int j = 0; j <= l_sz_J+1; ++j)
+    for (int j = 1; j <= l_sz_J; ++j)
     {
         cout << "spawned the threads bitch!" << endl;
         if(true) {
