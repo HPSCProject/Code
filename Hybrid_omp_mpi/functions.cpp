@@ -54,7 +54,7 @@ void eq_and_stream(qr_type ***fIn, qr_type ***fOut, qr_type **rho, qr_type **ux,
     for (int j = 0; j <= l_sz_J+1; ++j)
     {
         cout << "spawned the threads bitch!" << endl;
-        if(introduced) {
+        if(true) {
             cout << "Hello I am process #"  << endl;
             //<< << my_rank << " my j is " << j << " thread #"omp_get_thread_num() << endl;
             introduced = false;
