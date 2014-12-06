@@ -79,7 +79,6 @@ int main(int argc, char* argv[])
   ierr= MPI_Dims_create(num_procs,2,proc_dim);
   // cout<<"Proc in each dimension"<<proc_dim[0]<<" "<<proc_dim[1]<<endl;
 
-
   //Determine 2d cartaesian topology for procs 
   ierr = MPI_Cart_create(MPI_COMM_WORLD,2,proc_dim,periodicity,1,&grid_comm_world);
   ierr = MPI_Comm_rank(grid_comm_world,&myid_grid);//gives processor id in grid
@@ -92,9 +91,9 @@ int main(int argc, char* argv[])
   int local_dim[2];
   for (int i = 0;i<2;i++){
     local_dim[i]=total_points[i]/proc_dim[i];//no.of pts in 1 dir divided by number of procs in that dir                                                                                                    
-    // if (coord_grid[i] < (spat_dim[i]%proc_dim[i]))
-    //local_dim[i] = local_dim[i]+1;
-    // cout<<"Proc "<<myid_grid<<"local " <<local_dim[i]<<endl;                                                                                                                                             
+    if (coord_grid[i] < (total_points[i]%proc_dim[i]))
+      local_dim[i] = local_dim[i]+1;    
+      // cout<<"Proc "<<myid_grid<<"local " <<local_dim[i]<<endl;                                                                                                                                           
   }
 
   l_st_I=local_start(coord_grid[IDIR],proc_dim[IDIR],total_points[IDIR]);
@@ -105,8 +104,8 @@ int main(int argc, char* argv[])
   l_en_J=local_end(coord_grid[JDIR],proc_dim[JDIR],total_points[JDIR]);
   // l_sz_J=(l_en_J-l_st_J)+1;
   l_sz_J = local_dim[JDIR];
-  //  cout<<"Proc "<<myid_grid<<" Local x " <<l_st_I<<" "<<l_en_I<<" Local y "<<l_st_J<<" "<<l_en_J<<endl; 
-  // cout<<"Proc "<<myid_grid<<" Local x " <<l_sz_I<<" Local y "<<l_sz_J<<endl; 
+  // cout<<"Proc "<<myid_grid<<" Local x " <<l_st_I<<" "<<l_en_I<<" Local y "<<l_st_J<<" "<<l_en_J<<endl; 
+   cout<<"Proc "<<myid_grid<<" Local x " <<l_sz_I<<" Local y "<<l_sz_J<<endl; 
   // Fill input & output arrays w/ 0.
   fIn = new qr_type**[l_sz_I+2];
   fOut = new qr_type**[l_sz_I+2];
@@ -151,30 +150,12 @@ int main(int argc, char* argv[])
   // init_gaussian(fIn, fOut, wi,coord_grid[IDIR],proc_dim[IDIR],total_points[IDIR],coord_grid[JDIR],proc_dim[JDIR],total_points[JDIR],my_rank,l_sz_I,l_sz_J);
   init_gaussian(fIn, fOut, wi,coord_grid[JDIR],proc_dim[JDIR],total_points[JDIR],coord_grid[IDIR],proc_dim[IDIR],total_points[IDIR],my_rank,l_sz_I,l_sz_J);
   fstream out;
-    if(myid_grid == 0) out.open("data/pinit", ios::out);
-  for (int i = 1; i <= l_sz_I; ++i)
-  {
-    for (int j = 1; j <= l_sz_J; ++j)
+
+  //---Main Loop Begin
+  for (int ts = 0; ts < N_STEPS; ++ts)
     {
-      for (int n = 0; n < Q; ++n)
-      {
-	if(myid_grid == 0) out << fIn[i][j][n] << endl;
-      }
-    }
-   }
-  out.close();
-  for (int ts = 0; ts < 1; ++ts)
-    {
-      if (ts == T_ON)
-	{
-	  ftrue = true;
-	  // cout<<" Potential is on" <<endl;
-	}
-      else if (ts == T_OFF)
-	{
-	  ftrue = false;
-          //cout<<" Potential is off" <<endl;
-	}
+      if (ts == T_ON)	  ftrue = true;
+      else if (ts == T_OFF)  ftrue = false;
 
       eq_and_stream(fIn, fOut, rho, ux, uy, c, wi, nop, ftrue,coord_grid[JDIR],proc_dim[JDIR],total_points[JDIR],coord_grid[IDIR],proc_dim[IDIR],total_points[IDIR],my_rank,l_sz_I,l_sz_J);
       for(int i = 0; i <=l_sz_I+1; ++i)
@@ -182,11 +163,9 @@ int main(int argc, char* argv[])
 	  for(int j = 0; j <= l_sz_J+1; ++j)
 	      memcpy(fIn[i][j], fOut[i][j], F_SIZE);
         }
-       
- if(myid_grid == 0)  out.close();
-    
+ 
+      //-------Inter Processor Communication Begin           
  //copy the points to vertical neighbours
-
     for (int disp=-1;disp <2; disp=disp+2)
     {
         //Determine neighbouring processors
@@ -202,19 +181,8 @@ int main(int argc, char* argv[])
         if(src !=MPI_PROC_NULL){
 	  ierr = MPI_Wait(&request,&status);
 	  cpy_receive_cr_pts(temp,bufRx,disp);
-
         }
     } //end for disp
-
-    if(my_rank==0){
-      for(int i=0;i<Q;i++)
-	cout << "Tx Pt" << fIn[5][5][i]<<endl;
-    }
-
-         if(my_rank==1){
-      for(int i=0;i<Q;i++)
-	cout << "Rx early Pt" << temp[(Q)+i]<<endl;
-	}
 
     for (int disp=-1;disp <2; disp=disp+2)
     {
@@ -235,83 +203,12 @@ int main(int argc, char* argv[])
 	  ierr = MPI_Wait(&request,&status);
 	  cpy_receive_buf(fIn,l_sz_I,bufRx,dir,disp,temp,myid_grid);
         }
-	}// end for dir
+      }// end for dir
     }//end for disp
-
-    if(my_rank==3){
-      for(int i=0;i<Q;i++)
-	cout << "End Rx Pt" << fIn[0][0][i]<<endl;
-    }
-
-    if(myid_grid == 0) out.open("data/aeq1", ios::out);
-  for (int i = 1; i <= l_sz_I; ++i)
-  {
-    for (int j = 1; j <= l_sz_J; ++j)
-    {
-      for (int n = 0; n < Q; ++n)
-      {
-	if(myid_grid == 0) out << fIn[i][j][n] << endl;
-      }
-    }
-   }
-  out.close();
+    //---------Inter Processor Communication End
 
 
-    /*
-    if(myid_grid == 1) out.open("data/bdry6row1", ios::out);
-  for (int i = 1; i <= l_sz_I; ++i)
-  {
-      for (int n = 0; n < Q; ++n)
-      {
-	if(myid_grid == 1) out << fIn[1][i][n] << endl;
-      }
-    }
-  if(myid_grid == 1) out.close();
-
-    if(myid_grid == 2) out.open("data/bdry6col1", ios::out);
-  for (int i = 1; i <= l_sz_I; ++i)
-  {
-      for (int n = 0; n < Q; ++n)
-      {
-	if(myid_grid == 2) out << fIn[i][1][n] << endl;
-      }
-    }
-  if(myid_grid == 2) out.close();
-
-
-    if(myid_grid == 0) out.open("data/bdry6row", ios::out);
-  for (int i = 1; i <= l_sz_I; ++i)
-  {
-      for (int n = 0; n < Q; ++n)
-      {
-	if(myid_grid == 0) out << fIn[6][i][n] << endl;
-      }
-    }
-  if(myid_grid == 0) out.close();
-
-
-    if(myid_grid == 0) out.open("data/bdry6col", ios::out);
-  for (int i = 1; i <= l_sz_I; ++i)
-  {
-      for (int n = 0; n < Q; ++n)
-      {
-	if(myid_grid == 0) out << fIn[i][6][n] << endl;
-      }
-    }
-    if(myid_grid == 0) out.close(); */
-
-
-  eq_and_stream(fIn, fOut, rho, ux, uy, c, wi, nop, ftrue,coord_grid[JDIR],proc_dim[JDIR],total_points[JDIR],coord_grid[IDIR],proc_dim[IDIR],total_points[IDIR],my_rank,l_sz_I,l_sz_J);
-      for(int i = 0; i <=l_sz_I+1; ++i)
-	{
-	  for(int j = 0; j <= l_sz_J+1; ++j)
-	    {
-	      memcpy(fIn[i][j], fOut[i][j], F_SIZE);
-	    }
-        }
-
-
-  if(myid_grid == 0) out.open("data/aeq", ios::out);
+    if(myid_grid == 0) out.open("data/aeq", ios::out);
   for (int i = 1; i <= l_sz_I; ++i)
   {
     for (int j = 1; j <= l_sz_J; ++j)
@@ -323,8 +220,8 @@ int main(int argc, char* argv[])
     }
   }
   if(myid_grid == 0) out.close();
- 
 	}//end for ts
+  //---End Main loop
 
   ierr = MPI_Finalize();
   return 0;
